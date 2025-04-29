@@ -3,8 +3,63 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
-class m_news extends Model
+class M_news extends Model
 {
-    //
+    use HasFactory;
+
+    // UUID sebagai primary key
+    public $incrementing = false;
+    protected $keyType = 'string';
+
+    protected $table = 'news';
+
+    protected $fillable = [
+        'id',
+        'author',
+        'subcategory_id',
+        'title',
+        'content',
+        'status',
+        'views_count',
+        'likes_count',
+    ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'update_at' => 'datetime',
+        'views_count' => 'integer',
+        'likes_count' => 'integer',
+    ];
+
+    // Auto-generate UUID saat membuat model baru
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (!$model->id) {
+                $model->id = (string) Str::uuid();
+            }
+        });
+    }
+
+    /**
+     * Relasi ke model User (author).
+     */
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'author');
+    }
+
+    /**
+     * Relasi ke model SubCategory.
+     */
+    public function subcategory(): BelongsTo
+    {
+        return $this->belongsTo(M_sub_categories::class, 'subcategory_id');
+    }
 }
