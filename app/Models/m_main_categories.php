@@ -21,9 +21,28 @@ class M_main_categories extends Model
         'update_at' => 'datetime',
     ];
 
-    // Jika ingin relasi ke subcategories bisa ditambahkan
-    public function subcategories()
+    /**
+     * Relasi ke model SubCategory.
+     */
+    public function subCategories()
     {
-        return $this->hasMany(M_sub_categories::class);
+        return $this->hasMany(M_sub_categories::class, 'id_main_categories');
     }
+    /**
+     * Relasi ke model Gallery.
+     */
+    public function galleries()
+    {
+        return $this->hasMany(M_galleries::class, 'subcategory_id');
+    }
+
+    /**
+     * Menambahkan Main Category baru.
+     */
+    public function addMainCategory($data)
+    {
+        return $this->create($data);
+    }
+
+
 }

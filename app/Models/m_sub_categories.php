@@ -11,17 +11,18 @@ class M_sub_categories extends Model
     use HasFactory;
 
     protected $table = 'sub_categories';
-
+    protected $primaryKey = 'id';
     protected $fillable = [
         'id_main_categories',
         'name',
         'description',
     ];
+    public $timestamps = false;
 
     /**
      * Relasi ke model MainCategory.
      */
-    public function mainCategory(): BelongsTo
+    public function mainCategory()
     {
         return $this->belongsTo(M_main_categories::class, 'id_main_categories');
     }

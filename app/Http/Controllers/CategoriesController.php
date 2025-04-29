@@ -20,13 +20,13 @@ class CategoriesController extends Controller
 
     public function index()
     {
-        $mainCategories = $this->mainCategoryModel->with('subcategories')->get();
+        $mainCategories = $this->mainCategoryModel->get();
         return response()->json($mainCategories);
     }
 
     public function show($id)
     {
-        $mainCategory = $this->mainCategoryModel->with('subcategories')->find($id);
+        $mainCategory = $this->mainCategoryModel->find($id);
         if (!$mainCategory) {
             return response()->json(['message' => 'Main category not found'], 404);
         }
@@ -40,25 +40,39 @@ class CategoriesController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $mainCategory = $this->mainCategoryModel->create($request->all());
+        $mainCategory = $this->mainCategoryModel->addMainCategory($request->all());
+        if (!$mainCategory) {
+            return response()->json(['message' => 'Failed to create main category'], 500);
+        }
         return response()->json($mainCategory, 201);
     }
 
     public function update(Request $request, $id)
     {
+        // Cari main category berdasarkan ID
         $mainCategory = $this->mainCategoryModel->find($id);
+
+        // Jika tidak ditemukan, kembalikan error 404
         if (!$mainCategory) {
             return response()->json(['message' => 'Main category not found'], 404);
         }
 
-        $request->validate([
+        // Validasi data request
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
         ]);
 
-        $mainCategory->update($request->all());
-        return response()->json($mainCategory);
+        // Perbarui main category menggunakan hanya data yang valid
+        $mainCategory->update($validated);
+
+        // Mengembalikan respons dengan status 200 dan data yang diperbarui
+        return response()->json([
+            'message' => 'Main category updated successfully',
+            'data' => $mainCategory
+        ]);
     }
+
 
     public function destroy($id)
     {
