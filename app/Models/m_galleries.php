@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class M_galleries extends Model
@@ -15,7 +16,7 @@ class M_galleries extends Model
 
     public $incrementing = false;
     protected $keyType = 'string';
-    public $timestamps = false; // created_at dan update_at ditangani manual
+    public $timestamps = true; // created_at dan update_at ditangani manual
 
     protected $fillable = [
         'id',
@@ -25,12 +26,12 @@ class M_galleries extends Model
         'description',
         'subcategory_id',
         'created_at',
-        'update_at',
+        'updated_at',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
-        'update_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     protected static function boot()
@@ -49,7 +50,7 @@ class M_galleries extends Model
      */
     public function author(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'author_id');
+        return $this->belongsTo(User::class, 'author_id', 'id');
     }
 
     /**
@@ -57,6 +58,16 @@ class M_galleries extends Model
      */
     public function subcategory(): BelongsTo
     {
-        return $this->belongsTo(M_sub_categories::class, 'subcategory_id');
+        return $this->belongsTo(M_sub_categories::class, 'subcategory_id', 'id');
+    }
+
+    public function photos(): HasMany
+    {
+        return $this->hasMany(M_gallery_photos::class, 'gallery_id', 'id');
+    }
+
+    public function videos(): HasMany
+    {
+        return $this->hasMany(M_gallery_videos::class, 'gallery_id', 'id');
     }
 }

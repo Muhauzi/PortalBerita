@@ -29,6 +29,6 @@ class M_gallery_videos extends Model
      */
     public function gallery(): BelongsTo
     {
-        return $this->belongsTo(M_galleries::class, 'gallery_id');
+        return $this->belongsTo(M_galleries::class, 'gallery_id', 'id');
     }
 }

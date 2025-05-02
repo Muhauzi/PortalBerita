@@ -2,8 +2,10 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\GalleryController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -40,9 +42,16 @@ Route::prefix('news')->group(function () {
     Route::post('/', [NewsController::class, 'store'])->name('news.store');
     Route::put('/{id}', [NewsController::class, 'update'])->name('news.update');
     Route::delete('/{id}', [NewsController::class, 'destroy'])->name('news.destroy');
-
 });
 
+Route::prefix('galleries')->group(function () {
+    Route::get('/', [GalleryController::class, 'index'])->name('galleries.index');
+    Route::get('/{id}', [GalleryController::class, 'show'])->name('galleries.show');
+    Route::post('/', [GalleryController::class, 'store'])->name('galleries.store');
+    Route::get('/{id}/edit', [GalleryController::class, 'edit'])->name('galleries.edit');
+    Route::put('/{id}', [GalleryController::class, 'update'])->name('galleries.update');
+    Route::delete('/{id}', [GalleryController::class, 'destroy'])->name('galleries.destroy');
+});
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
