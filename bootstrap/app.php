@@ -22,6 +22,17 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
         ]);
     })
+    ->withMiddleware(function (Middleware $middleware) {
+
+        $middleware->validateCsrfTokens(except: [
+    
+            'news/*',
+            'categories/*',
+            'subcategories/*',
+    
+        ]);
+    
+    })
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();

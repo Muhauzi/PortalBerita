@@ -20,9 +20,10 @@ return new class extends Migration
             $table->foreignId('subcategory_id')->nullable()->constrained('sub_categories');
             $table->string('title');
             $table->text('content');
+            $table->text('image');
             $table->enum('status', ["draft", "published", "archived"]);
-            $table->bigInteger('views_count');
-            $table->bigInteger('likes_count');
+            $table->bigInteger('views_count')->default(0);
+            $table->bigInteger('likes_count')->default(0);
             $table->timestamp('created_at');
             $table->timestamp('update_at');
             $table->index(['subcategory_id', 'author']);

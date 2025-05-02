@@ -23,6 +23,7 @@ class M_news extends Model
         'subcategory_id',
         'title',
         'content',
+        'image',
         'status',
         'views_count',
         'likes_count',
@@ -30,7 +31,7 @@ class M_news extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
-        'update_at' => 'datetime',
+        'updated_at' => 'datetime',
         'views_count' => 'integer',
         'likes_count' => 'integer',
     ];
@@ -60,6 +61,6 @@ class M_news extends Model
      */
     public function subcategory(): BelongsTo
     {
-        return $this->belongsTo(M_sub_categories::class, 'subcategory_id');
+        return $this->belongsTo(M_sub_categories::class, 'subcategory_id', 'id');
     }
 }

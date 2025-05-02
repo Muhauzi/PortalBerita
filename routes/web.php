@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\CategoriesController;
+use App\Http\Controllers\NewsController;
 
 Route::get('/', function () {
     return Inertia::render('welcome');
@@ -14,7 +15,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('dashboard');
 });
 
-Route::prefix('categories')->withoutMiddleware([\App\Http\Middleware\VerifyCsrfToken::class])->group(function () {
+Route::prefix('categories')->group(function () {
     Route::get('/', [CategoriesController::class, 'index'])->name('categories.index');
     Route::get('/{id}', [CategoriesController::class, 'show'])->name('categories.show');
     Route::post('/', [CategoriesController::class, 'store'])->name('categories.store');
@@ -28,6 +29,18 @@ Route::prefix('subcategories')->group(function () {
     Route::post('/', [CategoriesController::class, 'storeSubcategory'])->name('subcategories.store');
     Route::put('/{id}', [CategoriesController::class, 'updateSubcategory'])->name('subcategories.update');
     Route::delete('/{id}', [CategoriesController::class, 'destroySubcategory'])->name('subcategories.destroy');
+});
+
+Route::prefix('news')->group(function () {
+    Route::get('/', [NewsController::class, 'index'])->name('news.index');
+    Route::get('/{id}', [NewsController::class, 'show'])->name('news.show');
+    Route::get('/category/{id}', [NewsController::class, 'getNewsByCategory'])->name('news.category'); 
+    Route::get('/subcategory/{id}', [NewsController::class, 'getNewsBySubcategory'])->name('news.subcategory');
+    Route::get('/search/{query}', [NewsController::class, 'getNewsByTitle'])->name('news.search');
+    Route::post('/', [NewsController::class, 'store'])->name('news.store');
+    Route::put('/{id}', [NewsController::class, 'update'])->name('news.update');
+    Route::delete('/{id}', [NewsController::class, 'destroy'])->name('news.destroy');
+
 });
 
 

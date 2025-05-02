@@ -26,5 +26,13 @@ class M_sub_categories extends Model
     {
         return $this->belongsTo(M_main_categories::class, 'id_main_categories');
     }
+
+    /**
+     * Relasi ke model News.
+     */
+    public function news()
+    {
+        return $this->hasMany(M_news::class, 'subcategory_id');
+    }
 }
 
