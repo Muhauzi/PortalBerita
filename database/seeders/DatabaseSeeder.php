@@ -22,11 +22,10 @@ class DatabaseSeeder extends Seeder
             'role' => 'admin',
         ]);
 
-        User::factory()->create([
+        User::factory()->create([            
             'id' => \Illuminate\Support\Str::uuid(),
             'name' => 'Test User',
             'email' => 'user@example.com',
-            'role' => 'user',
         ]);
 
     }

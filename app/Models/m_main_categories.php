@@ -18,7 +18,7 @@ class M_main_categories extends Model
 
     protected $casts = [
         'created_at' => 'datetime',
-        'update_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**

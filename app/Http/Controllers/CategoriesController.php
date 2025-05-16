@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 
 use App\Models\M_main_categories;
 use App\Models\M_sub_categories;
+use Inertia\Inertia;
 
 class CategoriesController extends Controller
 {
@@ -31,6 +32,12 @@ class CategoriesController extends Controller
             return response()->json(['message' => 'Main category not found'], 404);
         }
         return response()->json($mainCategory);
+    }
+
+    public function create()
+    {
+        // Method ini tidak diperlukan untuk API
+        return Inertia::render('categories/Create');
     }
 
     public function store(Request $request)
