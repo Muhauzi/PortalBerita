@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+use function Pest\Laravel\get;
+
 class M_main_categories extends Model
 {
     use HasFactory;
@@ -37,12 +39,22 @@ class M_main_categories extends Model
     }
 
     /**
+     * Mengambil semua Main Category.
+     */
+    public function getAllMainCategories()
+    {
+        return $this->with('subCategories')->get();
+    }
+
+    /**
      * Menambahkan Main Category baru.
      */
     public function addMainCategory($data)
     {
         return $this->create($data);
     }
+
+
 
 
 }

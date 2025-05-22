@@ -1,24 +1,46 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@headlessui/react';
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 
-const CreateMainCategory: React.FC = () => {
+interface Props {
+    idMainCategory: number;
+    idSubCategory: number;
+    initialData: {
+        name: string;
+        description: string;
+    };
+}
+
+const EditSubCategory: React.FC<Props> = ({ idMainCategory, idSubCategory, initialData }) => {
     const { data, setData, processing, errors } = useForm({
-        name: '',
-        description: '',
+        idMainCategory: idMainCategory,
+        name: initialData.name,
+        description: initialData.description,
     });
+
+    const { props } = usePage<{ flash?: { message?: string } }>();
+    const message = props.flash?.message;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.post('/category/main/store', data);
+        router.put(`/category/sub/update/${idSubCategory}`, data);
     };
 
     return (
         <AppLayout>
             <div className="mt-10 px-4 sm:px-6 lg:px-8">
                 <div className="mx-auto w-full max-w-5xl rounded-xl bg-white p-10 shadow-xl">
-                    <h1 className="mb-6 text-3xl font-bold text-gray-800">Add Main Category</h1>
+                    <h1 className="mb-6 text-3xl font-bold text-gray-800">Edit Sub Category</h1>
+
+                    {/* Error Message Section */}
+                    {message && (
+                        <div className="mb-6 rounded-lg bg-red-100 p-4 text-red-700">
+                            {message}
+                        </div>
+                    )}
+
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        <input type="hidden" name="idMainCategory" value={idMainCategory} />
                         <div>
                             <label htmlFor="name" className="block text-lg font-medium text-gray-700">
                                 Name
@@ -65,7 +87,7 @@ const CreateMainCategory: React.FC = () => {
                             <Button
                                 type="button"
                                 className="ml-4 rounded-lg bg-gray-300 px-6 py-3 text-base font-semibold text-gray-800 transition hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
-                                onClick={() => router.get('/category/main')}
+                                onClick={() => router.get('/category/sub/' + idMainCategory)}
                             >
                                 Cancel
                             </Button>
@@ -77,4 +99,4 @@ const CreateMainCategory: React.FC = () => {
     );
 };
 
-export default CreateMainCategory;
+export default EditSubCategory;

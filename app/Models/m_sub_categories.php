@@ -12,12 +12,12 @@ class M_sub_categories extends Model
 
     protected $table = 'sub_categories';
     protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'id_main_categories',
         'name',
         'description',
     ];
-    public $timestamps = false;
 
     /**
      * Relasi ke model MainCategory.
@@ -33,6 +33,11 @@ class M_sub_categories extends Model
     public function news()
     {
         return $this->hasMany(M_news::class, 'subcategory_id');
+    }
+
+    public function addSubCategory($data)
+    {
+        return $this->create($data);
     }
 }
 
