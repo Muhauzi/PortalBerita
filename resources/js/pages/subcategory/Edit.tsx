@@ -23,7 +23,17 @@ const EditSubCategory: React.FC<Props> = ({ idMainCategory, idSubCategory, initi
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        router.put(`/category/sub/update/${idSubCategory}`, data);
+        const formData = new FormData();
+        formData.append('idMainCategory', String(data.idMainCategory));
+        formData.append('name', data.name);
+        formData.append('description', data.description);
+        formData.append('_method', 'PUT'); // Specify the method as PUT for update
+        router.post('/category/sub/update/' + idMainCategory + '/' + idSubCategory, formData, {
+            onSuccess: () => {
+                router.get('/category/sub/' + idMainCategory);
+            },
+        });
+        
     };
 
     return (

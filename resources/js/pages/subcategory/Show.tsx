@@ -9,6 +9,7 @@ interface MainCategory {
 
 interface SubCategory {
     id: number;
+    id_main_categories: number;
     name: string;
     description: string;
 }
@@ -52,7 +53,7 @@ const Show: React.FC<Props> = ({ mainCategory, subCategory }) => {
 
                 <div className="mt-10">
                     <Link
-                        href="/category/main"
+                        href={`/category/sub/${subCategory.id_main_categories}`}
                         className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
                     >
                         ← Back to List
