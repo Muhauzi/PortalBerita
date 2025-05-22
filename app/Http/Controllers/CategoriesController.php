@@ -26,6 +26,7 @@ class CategoriesController extends Controller
     {
         $query = $this->mainCategoryModel->newQuery();
 
+        
         // Optional search
         if ($request->has('search') && $request->search !== null) {
             $query->where('name', 'like', '%' . $request->search . '%');
@@ -287,7 +288,7 @@ class CategoriesController extends Controller
     public function updateSub(Request $request, $category_id, $id)
     {
         // Cari sub category berdasarkan ID
-        $subCategory = $this->subCategoryModel->where('id_main_categories', $category_id)->find($id);
+        $subCategory = $this->subCategoryModel->findSubCategory($id, $category_id);
 
         // Jika tidak ditemukan, kembalikan error 404
         if (!$subCategory) {

@@ -9,10 +9,8 @@ interface FlashProps {
 
 const SwalNotification: React.FC = () => {
   const { props } = usePage<{ flash?: FlashProps }>();
-
-  // Pesan success dan error diasumsikan dikirim dari Laravel lewat session flash
-  const successMessage = props.flash?.success;
-  const errorMessage = props.flash?.error;
+  const successMessage = props.flash?.success || '';
+  const errorMessage = props.flash?.error || '';
 
   useEffect(() => {
     if (successMessage) {

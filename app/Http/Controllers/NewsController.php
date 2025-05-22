@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\M_news;
 use App\Models\M_main_categories;
 use App\Models\M_sub_categories;
+use Inertia\Inertia;
 
 class NewsController extends Controller
 {
@@ -20,28 +21,51 @@ class NewsController extends Controller
         $this->newsModel = $newsModel;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $news = $this->newsModel->get();
-        return response()->json($news);
+        $query = $this->newsModel->newQuery();
+        // Optional search
+        if ($request->has('search') && $request->search !== null) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $perPage = $request->input('perPage', 10); // Default to 10
+
+        $news = $query->with(['subcategory', 'author'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return Inertia::render('news/Index', [
+            'newsData' => $news,
+            'filters' => $request->all(['search', 'perPage']),
+        ]);
     }
 
     public function show($id)
     {
         $news = $this->newsModel->find($id);
+        $mainCategories = $this->mainCategoryModel->get();
+        $subCategories = $this->subCategoryModel->get();
         if (!$news) {
             return response()->json(['message' => 'News not found'], 404);
         }
-        return response()->json($news);
+
+        return Inertia::render('news/Show', [
+            'news' => $news,
+            'maincategories' => $mainCategories,
+            'subcategories' => $subCategories,
+        ]);
     }
 
     public function create()
     {
+        
         $subCategories = $this->subCategoryModel->get();
         $mainCategories = $this->mainCategoryModel->get();
-        return inertia('News/Create', [
-            'subCategories' => $subCategories,
-            'mainCategories' => $mainCategories,
+        return inertia('news/Create', [
+            'subcategories' => $subCategories,
+            'maincategories' => $mainCategories,
         ]);
     }
 
@@ -61,14 +85,14 @@ class NewsController extends Controller
 
         // Simpan file gambar
         $fileName = time() . '_' . $image->getClientOriginalName();
-        $filePath = $image->storeAs('images', $fileName, 'public');
+        $image->storeAs('images/news/', $fileName, 'public');
 
         $data = [
             'title' => $request->title,
             'content' => $request->content,
             'subcategory_id' => $request->subcategory_id,
             'image' => $fileName,
-            'author' => $request->user_id,
+            'author' => Auth::user()->id,
             'status' => 'draft',
             'views_count' => 0,
             'likes_count' => 0,
@@ -77,11 +101,28 @@ class NewsController extends Controller
         if (!$news) {
             return response()->json(['message' => 'Failed to create news'], 500);
         }
-        return response()->json($news, 201);
+        return redirect()->route('news.index')->with('success', 'News created successfully');
+
+    }
+
+    public function edit($id)
+    {
+        $news = $this->newsModel->find($id);
+        if (!$news) {
+            return response()->json(['message' => 'News not found'], 404);
+        }
+        $subCategories = $this->subCategoryModel->get();
+        $mainCategories = $this->mainCategoryModel->get();
+        return inertia('news/Edit', [
+            'news' => $news,
+            'subcategories' => $subCategories,
+            'maincategories' => $mainCategories,
+        ]);
     }
 
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         // Cari news berdasarkan ID
         $news = $this->newsModel->find($id);
 
@@ -99,29 +140,30 @@ class NewsController extends Controller
         ]);
 
         $file = $request->file('image');
+        $fileName = time() . '_' . $file->getClientOriginalName();
         if ($file) {
             // Hapus file lama jika ada
             if ($news->image) {
                 Storage::disk('public')->delete($news->image);
             }
             // Simpan file baru
-            $filePath = $file->store('images', 'public');
+            $file->storeAs('images/news/', $fileName, 'public');
         } else {
-            $filePath = $news->image;
+            $fileName = $news->image;
         }
 
         $data = [
             'title' => $request->title,
             'content' => $request->content,
             'subcategory_id' => $request->subcategory_id,
-            'image' => $filePath,
+            'image' => $fileName,
             'status' => $request->status,
         ];
 
         // Update data news
         $news->update($data);
 
-        return response()->json($news);
+        return redirect('/news')->with('success', 'News updated successfully');
     }
 
     public function destroy($id)
@@ -137,7 +179,7 @@ class NewsController extends Controller
         // Hapus data news
         $news->delete();
 
-        return response()->json(['message' => 'News deleted successfully']);
+        return redirect()->route('news.index')->with('success', 'News deleted successfully');
     }
 
     public function getNewsBySubcategory($subcategoryId)

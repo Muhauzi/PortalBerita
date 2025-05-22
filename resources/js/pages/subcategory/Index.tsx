@@ -2,7 +2,7 @@ import AppLayout from '@/layouts/app-layout';
 import { router, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Eye, Pencil, Trash2 } from 'lucide-react';
-import SwalNotification from '@/components/swalNotification';
+import SwalNotification from '@/components/swal-notification';
 import Swal from 'sweetalert2';
 
 interface SubCategory {

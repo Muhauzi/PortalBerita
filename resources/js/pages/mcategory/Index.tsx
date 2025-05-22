@@ -6,7 +6,7 @@ import {
     Pencil,
     Trash2,
 } from 'lucide-react';
-import SwalNotification from '@/components/swalNotification';
+import SwalNotification from '@/components/swal-notification';
 import Swal from 'sweetalert2';
 
 interface MainCategory {

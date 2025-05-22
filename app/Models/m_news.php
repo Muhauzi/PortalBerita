@@ -63,4 +63,17 @@ class M_news extends Model
     {
         return $this->belongsTo(M_sub_categories::class, 'subcategory_id', 'id');
     }
+
+    /**
+     * Mengambil semua berita.
+     */
+
+    public function getAllNews()
+    {
+        return $this->with(['subcategory', 'author'])
+                    ->where('status', 'published')
+                    ->orderBy('created_at', 'desc')
+                    ->paginate(10)
+                    ->withQueryString();
+    }
 }

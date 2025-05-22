@@ -39,5 +39,10 @@ class M_sub_categories extends Model
     {
         return $this->create($data);
     }
+
+    public function findSubCategory($id, $id_main_categories)
+    {
+        return $this->where('id', $id)->where('id_main_categories', $id_main_categories)->first();
+    }
 }
 
