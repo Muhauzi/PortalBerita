@@ -140,8 +140,8 @@ class NewsController extends Controller
         ]);
 
         $file = $request->file('image');
-        $fileName = time() . '_' . $file->getClientOriginalName();
         if ($file) {
+            $fileName = time() . '_' . $file->getClientOriginalName();
             // Hapus file lama jika ada
             if ($news->image) {
                 Storage::disk('public')->delete($news->image);

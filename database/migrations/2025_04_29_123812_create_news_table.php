@@ -25,7 +25,7 @@ return new class extends Migration
             $table->bigInteger('views_count')->default(0);
             $table->bigInteger('likes_count')->default(0);
             $table->timestamp('created_at');
-            $table->timestamp('update_at');
+            $table->timestamp('updated_at');
             $table->index(['subcategory_id', 'author']);
         });
 

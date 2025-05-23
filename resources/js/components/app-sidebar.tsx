@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Newspaper } from 'lucide-react';
+import { BookOpen, Folder, GalleryHorizontal, LayoutGrid, Newspaper } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -34,7 +34,7 @@ const mainNavItems: NavItem[] = [
     {
         title: 'Gallery',
         href: '/gallery',
-        icon: BookOpen, // Updated to use BookOpen as a placeholder for Gallery
+        icon: GalleryHorizontal, // Updated to use BookOpen as a placeholder for Gallery
     },
 ];
 

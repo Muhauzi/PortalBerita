@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\NewsController;
+use App\Http\Controllers\GalleryController;
 use Inertia\Inertia;
 
 Route::get('/', function () {
@@ -45,6 +46,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{id}/edit', [NewsController::class, 'edit'])->name('news.edit');
         Route::put('/{id}/update', [NewsController::class, 'update'])->name('news.update');
         Route::delete('/{id}', [NewsController::class, 'destroy'])->name('news.destroy');
+    });
+
+    Route::prefix('gallery')->group(function () {
+        Route::get('/', [GalleryController::class, 'index'])->name('gallery.index');
+        Route::get('/create', [GalleryController::class, 'create'])->name('gallery.create');
+        Route::get('/{id}', [GalleryController::class, 'show'])->name('gallery.show');
+        Route::post('/store', [GalleryController::class, 'store'])->name('gallery.store');
+        Route::get('/{id}/edit', [GalleryController::class, 'edit'])->name('gallery.edit');
+        Route::put('/{id}/update', [GalleryController::class, 'update'])->name('gallery.update');
+        Route::delete('/{id}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
     });
 });
 

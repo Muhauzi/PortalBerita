@@ -29,30 +29,97 @@ class GalleryController extends Controller
         $this->galleryVideoModel = $galleryVideoModel;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $galleries = $this->galleryModel->with(['author', 'subcategory'])->get();
-        return response()->json($galleries);
+        $query = $this->galleryModel->newQuery();
+        // Optional search
+        if ($request->has('search') && $request->search !== null) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        $perPage = $request->input('perPage', 10); // Default to 10
+
+        $galleries = $query->with(['subcategory', 'author'])
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return Inertia::render('galleries/Index', [
+            'galleriesData' => $galleries,
+            'filters' => $request->all(['search', 'perPage']),
+        ]);
     }
 
     public function show($id)
     {
-        $gallery = $this->galleryModel->with(['author', 'subcategory'])->find($id);
+        $gallery = $this->galleryModel->with(['author', 'subcategory'])->find($id);        
+        $maincategories = $this->mainCategoryModel->all();
+        $subcategories = $this->subCategoryModel->with('mainCategory')->get();
         if (!$gallery) {
             return response()->json(['message' => 'Gallery not found'], 404);
+        }
+        if ($gallery) {
+            if ($gallery->type == 'photo') {
+                $photos = $this->galleryPhotoModel->where('gallery_id', $gallery->id)->get();
+                $videos = null;
+
+                return Inertia::render('galleries/Show', [
+                    'gallery' => $gallery,
+                    'photos' => $photos,
+                    'videos' => $videos,
+                    'maincategories' => $maincategories,
+                    'subcategories' => $subcategories,
+                ]);
+            } elseif ($gallery->type == 'video') {
+                $videos = $this->galleryVideoModel->where('gallery_id', $gallery->id)->get();
+                $photos = null;
+
+                return Inertia::render('galleries/Show', [
+                    'gallery' => $gallery,
+                    'photos' => $photos,
+                    'videos' => $videos,
+                    'maincategories' => $maincategories,
+                    'subcategories' => $subcategories,
+                ]);
+            } else {
+                $photos = $this->galleryPhotoModel->where('gallery_id', $gallery->id)->get();
+                $videos = $this->galleryVideoModel->where('gallery_id', $gallery->id)->get();
+
+                return Inertia::render('galleries/Show', [
+                    'gallery' => $gallery,
+                    'photos' => $photos,
+                    'videos' => $videos,
+                    'maincategories' => $maincategories,
+                    'subcategories' => $subcategories,
+                ]);
+            }
+        } else {
+            $photos = null;
+            $videos = null;
         }
         return response()->json($gallery);
     }
 
+    public function create(Request $request)
+    {
+        $maincategories = $this->mainCategoryModel->all();
+        $subcategories = $this->subCategoryModel->with('mainCategory')->get();
+        return Inertia::render('galleries/Create', [
+            'subcategories' => $subcategories,
+            'maincategories' => $maincategories,
+        ]);
+    }
 
     public function store(Request $request)
     {
+        // dd($request->all());
         $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'subcategory_id' => 'required|exists:sub_categories,id',
-            'file' => 'required|array',
-            'file.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mkv,webm|max:20480',
+            'type' => 'nullable|string|in:photo,video,mixed',
+            'files' => 'required|array',
+            'files.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mkv,webm|max:20480',
         ]);
 
         DB::beginTransaction();
@@ -62,7 +129,7 @@ class GalleryController extends Controller
             $hasImage = false;
             $hasVideo = false;
 
-            foreach ($request->file('file') as $uploadedFile) {
+            foreach ($request->file('files') as $uploadedFile) {
                 $mime = $uploadedFile->getMimeType();
                 if (str_starts_with($mime, 'image/')) {
                     $hasImage = true;
@@ -84,7 +151,7 @@ class GalleryController extends Controller
 
             // Simpan galeri utama
             $gallery = $this->galleryModel->create([
-                'author_id' => $request->author_id,
+                'author_id' => Auth::user()->id,
                 'title' => $request->title,
                 'description' => $request->description,
                 'subcategory_id' => $request->subcategory_id,
@@ -93,8 +160,8 @@ class GalleryController extends Controller
 
             $hasSavedFile = false;
 
-            if ($request->hasFile('file')) {
-                foreach ($request->file('file') as $uploadedFile) {
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $uploadedFile) {
                     $mime = $uploadedFile->getMimeType();
                     $fileName = time() . '_' . $uploadedFile->getClientOriginalName();
 
@@ -126,7 +193,7 @@ class GalleryController extends Controller
             }
 
             DB::commit();
-            return response()->json($gallery, 201);
+            return redirect('/gallery')->with('success', 'Gallery created successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -141,24 +208,46 @@ class GalleryController extends Controller
     {
         $gallery = M_galleries::with(['photos', 'videos'])->findOrFail($id);
     
+        $maincategories = M_main_categories::all();
         $subcategories = M_sub_categories::all();
     
-        return Inertia::render('Galleries/EditGalleryForm', [
-            'gallery' => $gallery,
-            'photos' => $gallery->photos ?? [],
-            'videos' => $gallery->videos ?? [],
+        // Gabungkan paths foto dan video jadi satu array file
+        $files = [];
+    
+        foreach ($gallery->photos ?? [] as $photo) {
+            $files[] = asset("storage/gallery/photos/{$photo->photo_path}");
+        }
+    
+        foreach ($gallery->videos ?? [] as $video) {
+            $files[] = asset("storage/gallery/videos/{$video->video_url}");
+        }
+    
+        return Inertia::render('galleries/Edit', [
+            'gallery' => [
+                'id' => $gallery->id,
+                'id_main_categories' => $gallery->subcategory->id_main_categories ?? null,
+                'subcategory_id' => $gallery->subcategory_id,
+                'author_id' => $gallery->author_id,
+                'type' => $gallery->type,
+                'title' => $gallery->title,
+                'description' => $gallery->description,
+                'files' => $files,
+            ],
+            'maincategories' => $maincategories,
             'subcategories' => $subcategories,
         ]);
     }
+    
 
     public function update(Request $request, $id)
     {
+        // dd($request->all());
         $request->validate([
             'title' => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'subcategory_id' => 'sometimes|required|exists:sub_categories,id',
-            'file' => 'nullable|array',
-            'file.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mkv,webm|max:20480',
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:jpg,jpeg,png,webp,mp4,mkv,webm|max:20480',
         ]);
 
         DB::beginTransaction();
@@ -173,12 +262,31 @@ class GalleryController extends Controller
                 'subcategory_id' => $request->has('subcategory_id') ? $request->subcategory_id : $gallery->subcategory_id,
             ]);
 
+            if ($request->has('deleted_files')) {
+                foreach ($request->input('deleted_files') as $fileUrl) {
+                    if (str_contains($fileUrl, 'photos')) {
+                        $photo = $this->galleryPhotoModel->where('gallery_id', $gallery->id)->where('photo_path', basename($fileUrl))->first();
+                        if ($photo) {
+                            Storage::disk('public')->delete('gallery/photos/' . $photo->photo_path);
+                            $photo->delete();
+                        }
+                    } elseif (str_contains($fileUrl, 'videos')) {
+                        $video = $this->galleryVideoModel->where('gallery_id', $gallery->id)->where('video_url', basename($fileUrl))->first();
+                        if ($video) {
+                            Storage::disk('public')->delete('gallery/videos/' . $video->video_url);
+                            $video->delete();
+                        }
+                    }
+                }
+            }
+            
+
             $hasImage = false;
             $hasVideo = false;
             $hasNewFile = false;
 
-            if ($request->hasFile('file')) {
-                foreach ($request->file('file') as $uploadedFile) {
+            if ($request->hasFile('files')) {
+                foreach ($request->file('files') as $uploadedFile) {
                     $mime = $uploadedFile->getMimeType();
                     $fileName = time() . '_' . $uploadedFile->getClientOriginalName();
 
@@ -225,13 +333,43 @@ class GalleryController extends Controller
             }
 
             DB::commit();
-            return response()->json($gallery, 200);
+            return redirect('/gallery')->with('success', 'Gallery updated successfully');
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'error' => 'Gagal mengupdate galeri',
                 'message' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    public function destroy($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $gallery = $this->galleryModel->findOrFail($id);
+
+            // Hapus foto
+            foreach ($gallery->photos as $photo) {
+                Storage::disk('public')->delete('gallery/photos/' . $photo->photo_path);
+                $photo->delete();
+            }
+
+            // Hapus video
+            foreach ($gallery->videos as $video) {
+                Storage::disk('public')->delete('gallery/videos/' . $video->video_url);
+                $video->delete();
+            }
+
+            // Hapus galeri
+            $gallery->delete();
+
+            DB::commit();
+            return redirect('/gallery')->with('success', 'Gallery deleted successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['error' => 'Failed to delete gallery', 'message' => $e->getMessage()], 500);
         }
     }
 }

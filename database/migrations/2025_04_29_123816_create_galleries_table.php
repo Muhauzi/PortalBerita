@@ -22,7 +22,7 @@ return new class extends Migration
             $table->text('description');
             $table->foreignId('subcategory_id')->constrained('sub_categories', 'id');
             $table->timestamp('created_at');
-            $table->timestamp('update_at');
+            $table->timestamp('updated_at');
             $table->index(['subcategory_id', 'author_id']);
         });
 

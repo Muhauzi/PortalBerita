@@ -200,7 +200,11 @@ const EditNews: React.FC<Props> = ({ maincategories, subcategories, news }) => {
                             />
                             {errors.image && <p className="mt-1 text-sm text-red-500">{errors.image}</p>}
                             {news.image && (
-                                <img src={news.image} alt="Current" className="mt-4 h-32 w-32 object-cover" />
+                                <img
+                                    src={`/storage/images/news/${news.image}`}
+                                    alt="Current"
+                                    className="mt-4 h-32 w-32 object-cover"
+                                />
                             )}
                         </div>
 
