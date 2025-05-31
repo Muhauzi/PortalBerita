@@ -44,5 +44,15 @@ class M_sub_categories extends Model
     {
         return $this->where('id', $id)->where('id_main_categories', $id_main_categories)->first();
     }
+
+    public function isUsedInNews($id)
+    {
+        return $this->news()->where('subcategory_id', $id)->exists();
+    }
+    
+    public function isUsedInGallery($id)
+    {
+        return $this->galleries()->where('subcategory_id', $id)->exists();
+    }
 }
 

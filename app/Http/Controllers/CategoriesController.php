@@ -113,7 +113,12 @@ class CategoriesController extends Controller
     {
         $mainCategory = $this->mainCategoryModel->find($id);
         if (!$mainCategory) {
-            return response()->json(['message' => 'Main category not found'], 404);
+            return redirect()->back()->with('error', 'Main category not found.');
+        }
+
+        // Periksa apakah main category digunakan dalam subcategories
+        if ($mainCategory->isUsed($id)) {
+            return redirect()->back()->with('error', 'Main category cannot be deleted because it is used in subcategories.');
         }
 
         // Hapus subcategories terkait
@@ -125,61 +130,6 @@ class CategoriesController extends Controller
         $mainCategory->delete();
 
         return redirect()->route('main.index')->with('success', 'Category deleted successfully.');
-    }
-
-    public function getSubcategories($id)
-    {
-        $subCategories = $this->subCategoryModel->where('id_main_categories', $id)->get();
-        return response()->json($subCategories);
-    }
-
-    public function getSubcategory($id)
-    {
-        $subCategory = $this->subCategoryModel->find($id);
-        if (!$subCategory) {
-            return response()->json(['message' => 'Subcategory not found'], 404);
-        }
-        return response()->json($subCategory);
-    }
-
-    public function storeSubcategory(Request $request)
-    {
-        $request->validate([
-            'id_main_categories' => 'required|exists:main_categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $subCategory = $this->subCategoryModel->create($request->all());
-        return response()->json($subCategory, 201);
-    }
-
-    public function updateSubcategory(Request $request, $id)
-    {
-        $subCategory = $this->subCategoryModel->find($id);
-        if (!$subCategory) {
-            return response()->json(['message' => 'Subcategory not found'], 404);
-        }
-
-        $request->validate([
-            'id_main_categories' => 'required|exists:main_categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-        ]);
-
-        $subCategory->update($request->all());
-        return response()->json($subCategory);
-    }
-
-    public function destroySubcategory($id)
-    {
-        $subCategory = $this->subCategoryModel->find($id);
-        if (!$subCategory) {
-            return response()->json(['message' => 'Subcategory not found'], 404);
-        }
-
-        $subCategory->delete();
-        return response()->json(['message' => 'Subcategory deleted successfully']);
     }
 
     // sub category
@@ -311,25 +261,21 @@ class CategoriesController extends Controller
     {
         $subCategory = $this->subCategoryModel->where('id_main_categories', $category_id)->find($id);
         if (!$subCategory) {
-            return response()->json(['message' => 'Sub category not found'], 404);
+            return redirect()->back()->with('error', 'Sub category not found.');
         }
 
+        // Periksa apakah sub category digunakan dalam berita atau galeri
+        if ($subCategory->isUsedInNews($id)) {
+            return redirect()->back()->with('error', 'Sub category cannot be deleted because it is used in news.');
+        } 
+
+        if ($subCategory->isUsedInGallery($id)) {
+            return redirect()->back()->with('error', 'Sub category cannot be deleted because it is used in gallery.');
+        }
+        
+        // Hapus sub category
         $subCategory->delete();
 
         return redirect()->route('sub.index', ['category_id' => $category_id])->with('success', 'Sub Category deleted successfully.');
     }
-    public function getSubcategoriesByMainCategory($category_id)
-    {
-        $subCategories = $this->subCategoryModel->where('id_main_categories', $category_id)->get();
-        return response()->json($subCategories);
-    }
-    public function getSubcategoryByMainCategory($category_id, $id)
-    {
-        $subCategory = $this->subCategoryModel->where('id_main_categories', $category_id)->find($id);
-        if (!$subCategory) {
-            return response()->json(['message' => 'Subcategory not found'], 404);
-        }
-        return response()->json($subCategory);
-    }
-
 }

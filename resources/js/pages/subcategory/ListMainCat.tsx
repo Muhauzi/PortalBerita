@@ -39,13 +39,13 @@ const ListMainCat: React.FC = () => {
                 <div
                     key={category.id}
                     className={`p-6 border rounded-xl shadow-md transform transition-transform duration-300 hover:scale-105 cursor-pointer ${
-                    selectedMainCategoryId === category.id ? 'bg-blue-500 text-white' : 'bg-gray-50'
+                    selectedMainCategoryId === category.id ? 'bg-indigo-600 text-white' : 'bg-gray-50'
                     }`}
                     onClick={() => handleMainCategoryClick(category.id)}
                 >
-                    <h2 className="text-2xl font-bold mb-2">{category.name}</h2>
-                    <p className="text-sm text-gray-600">
-                    Click to explore subcategories under {category.name} category.
+                    <h2 className={`text-2xl font-bold mb-2 ${selectedMainCategoryId === category.id ? 'text-white' : ''}`}>{category.name}</h2>
+                    <p className={`text-sm ${selectedMainCategoryId === category.id ? 'text-white' : 'text-gray-600'}`}>
+                        Click to explore subcategories under {category.name} category.
                     </p>
                 </div>
                 ))}

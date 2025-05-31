@@ -54,6 +54,16 @@ class M_main_categories extends Model
         return $this->create($data);
     }
 
+    /**
+     * Memeriksa Apakah Main Category Digunakan Atau Tidak untuk Dihapus.
+     */
+    public function isUsed($id)
+    {
+        $isUsed = $this->subCategories()->where('id_main_categories', $id)->exists();
+        return $isUsed;
+        
+    }
+
 
 
 
