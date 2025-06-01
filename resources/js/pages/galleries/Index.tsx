@@ -132,7 +132,11 @@ const Index: React.FC<Props> = ({ galleriesData, filters }) => {
                                         <td className="px-6 py-4 text-sm text-gray-700">{gallery.author?.name ?? '-'}</td>
                                         <td className="px-6 py-4 text-sm text-gray-700">{gallery.type}</td>
                                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{gallery.title}</td>
-                                        <td className="px-6 py-4 text-sm text-gray-700">{gallery.description}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-700">
+                                            {gallery.description.length > 50
+                                                ? `${gallery.description.slice(0, 50)}...`
+                                                : gallery.description}
+                                        </td>
                                         <td className="px-6 py-4 text-center">
                                             <div className="flex justify-center gap-3">
                                                 <Link href={`/gallery/${gallery.id}`} className="text-blue-600 hover:text-blue-800">
