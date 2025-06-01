@@ -70,4 +70,16 @@ class M_galleries extends Model
     {
         return $this->hasMany(M_gallery_videos::class, 'gallery_id', 'id');
     }
+
+
+    /**
+     * Mengambil semua galeri.
+     */
+    public function getVideosGalleries()
+    {
+        return $this->with('videos', 'author:id,name', 'subcategory:id,name')
+            ->where('type', 'video')
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
 }

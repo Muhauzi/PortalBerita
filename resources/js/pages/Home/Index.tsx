@@ -17,8 +17,14 @@ interface subCategory {
 
 interface newsItem {
     id: number;
-    author: string;
-    subcategory_id: number;
+    author: {
+        id: number;
+        name: string;
+    };
+    subcategory: {
+        id: number;
+        name: string;
+    };
     title: string;
     content: string;
     image: string;
@@ -28,24 +34,38 @@ interface newsItem {
     views_count: number;
     likes_count: number;
 }
+interface Video {
+    id: number;
+    gallery_id: string;
+    video_url: string;
+    created_at: string;
+}
+interface videoGallery {
+    id: number;
+    title: string;
+    description: string;
+    type: string;
+    author: {
+        id: number;
+        name: string;
+    };
+    videos: Video[];
+    subcategory: {
+        id: number;
+        name: string;
+    };
+}
 
 interface Props {
-    newsData: {
-        news: newsItem[];
-        current_page: number;
-        last_page: number;
-        total: number;
-        links: {
-            url: string | null;
-            label: string;
-            active: boolean;
-        }[];
-    };
+    topNews: newsItem[];
+    recentNews: newsItem[];
+    trendingNews: newsItem[];
+    videoGalleries: videoGallery[];
     mainCategories: mainCategory[];
     subCategories: subCategory[];
 }
 
-const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
+const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategories, subCategories, videoGalleries }) => {
     // Example data for main categories and subcategories
     const navItems = mainCategories.map((category) => ({
         name: category.name,
@@ -58,6 +78,8 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
         href: `/category/${category.id}`,
     }));
 
+    // Example data for news items
+
     return (
         <div className="flex min-h-screen flex-col bg-white text-black">
             {/* Top Bar */}
@@ -67,10 +89,8 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
             {/* Navigation Bar */}
             <nav className="border-b border-gray-200 bg-white px-6 py-4">
                 <div className="mx-auto flex max-w-7xl items-center justify-between">
-                    <div className="text-2xl font-bold">SITE NAME</div>
-                    <HomeNavbar
-                        navItems={navItems}
-                    />
+                    <div className="text-2xl font-bold">ZiphNews</div>
+                    <HomeNavbar navItems={navItems} />
                 </div>
             </nav>
 
@@ -83,30 +103,46 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
                     <section className="mb-12">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Recent News</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                            {/* Main Recent News */}
                             <div className="relative col-span-2 h-[30rem] overflow-hidden rounded-xl">
-                                <img src="https://source.unsplash.com/random/800x600/?news" alt="Top News" className="h-full w-full object-cover" />
+                                <img
+                                    src={
+                                        recentNews[0]?.image
+                                            ? `/storage/images/news/${recentNews[0].image}`
+                                            : 'https://picsum.photos/1920/1080?random'
+                                    }
+                                    alt={recentNews[0]?.title}
+                                    className="h-full w-full object-cover"
+                                />
                                 <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6">
-                                    <span className="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white">TOP STORY</span>
-                                    <h2 className="mt-2 text-3xl font-bold text-white">Global Summit Addresses Climate Change Crisis</h2>
-                                    <p className="mt-2 text-gray-200">
-                                        World leaders gather to discuss urgent measures against rising global temperatures.
-                                    </p>
+                                    <span className="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white">RECENT</span>
+                                    <h2 className="mt-2 text-3xl font-bold text-white">{recentNews[0]?.title}</h2>
+                                    <p className="mt-2 text-gray-200">{recentNews[0]?.content.slice(0, 100)}...</p>
                                     <div className="mt-4 flex items-center text-sm text-gray-300">
-                                        <span>By John Smith</span>
+                                        <span>By {recentNews[0]?.author.name}</span>
                                         <span className="mx-2">•</span>
-                                        <span>2 hours ago</span>
+                                        <span>{recentNews[0]?.created_at ? new Date(recentNews[0].created_at).toLocaleDateString() : ''}</span>
                                     </div>
                                 </div>
                             </div>
+                            {/* Side Recent News Cards */}
                             <div className="space-y-4">
-                                {/* Example News Cards */}
-                                {['Politics', 'Tech', 'Health'].map((category) => (
-                                    <div className="rounded-lg border border-gray-100 bg-white p-4 shadow-sm" key={category}>
-                                        <span className="text-xs font-bold text-blue-600">{category}</span>
-                                        <h3 className="mt-1 font-bold">Example News Title</h3>
-                                        <p className="mt-1 text-sm text-gray-600">Example description for {category} news.</p>
-                                        <div className="mt-2 flex items-center text-xs text-gray-500">
-                                            <span>45 min ago</span>
+                                {recentNews.slice(1, 4).map((news) => (
+                                    <div key={news.id} className="flex items-start gap-3">
+                                        <div className="flex flex-row items-center rounded-lg border border-gray-100 bg-white p-4 shadow-sm gap-3">
+                                            <img
+                                                className="h-20 w-20 rounded-md bg-gray-500 object-cover"
+                                                src={news.image ? `/storage/images/news/${news.image}` : "https://picsum.photos/80/80?random"}
+                                                alt={news.title}
+                                            />
+                                            <div className="flex-1">
+                                                <span className="text-xs font-bold text-blue-600">{news.subcategory.name}</span>
+                                                <h3 className="mt-1 font-bold">{news.title}</h3>
+                                                <p className="mt-1 text-sm text-gray-600">{news.content.slice(0, 60)}...</p>
+                                                <div className="mt-2 flex items-center text-xs text-gray-500">
+                                                    <span>{new Date(news.created_at).toLocaleDateString()}</span>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
@@ -114,36 +150,43 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
                         </div>
                     </section>
 
-                    {/* Additional Sections (Trending, Videos, Latest News) */}
+                    {/* Top News */}
                     <section className="mb-12">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Top News</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             {/* Gambar besar kiri */}
-                            <div className="relative col-span-2 h-96 overflow-hidden rounded-xl">
-                                <img src="https://source.unsplash.com/random/800x600/?news" alt="Top News" className="h-full w-full object-cover" />
-                                <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black to-transparent p-6">
-                                    <span className="inline-block bg-red-600 px-2 py-1 text-xs font-bold text-white" style={{ width: 'fit-content' }}>
-                                        TOP STORY
-                                    </span>
-                                    <h2 className="mt-2 text-3xl font-bold text-white">Global Summit Addresses Climate Change Crisis</h2>
-                                    <p className="mt-2 text-gray-200">
-                                        World leaders gather to discuss urgent measures against rising global temperatures.
-                                    </p>
-                                    <div className="mt-4 flex items-center text-sm text-gray-300">
-                                        <span>By John Smith</span>
-                                        <span className="mx-2">•</span>
-                                        <span>2 hours ago</span>
+                            {topNews[0] && (
+                                <div className="relative col-span-2 h-96 overflow-hidden rounded-xl">
+                                    <img
+                                        src={topNews[0].image ? `/storage/images/news/${topNews[0].image}` : 'https://picsum.photos/1920/1080?random'}
+                                        alt={topNews[0].title}
+                                        className="h-full w-full object-cover"
+                                    />
+                                    <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black to-transparent p-6">
+                                        <span
+                                            className="inline-block bg-red-600 px-2 py-1 text-xs font-bold text-white"
+                                            style={{ width: 'fit-content' }}
+                                        >
+                                            TOP STORY
+                                        </span>
+                                        <h2 className="mt-2 text-3xl font-bold text-white">{topNews[0].title}</h2>
+                                        <p className="mt-2 text-gray-200">{topNews[0].content.slice(0, 100)}...</p>
+                                        <div className="mt-4 flex items-center text-sm text-gray-300">
+                                            <span>By {topNews[0].author.name}</span>
+                                            <span className="mx-2">•</span>
+                                            <span>{topNews[0].created_at ? new Date(topNews[0].created_at).toLocaleDateString() : ''}</span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* Dua gambar kecil kanan */}
                             <div className="flex flex-col gap-6">
-                                {[1, 2].map((_, index) => (
-                                    <div key={index} className="relative h-44 overflow-hidden rounded-xl">
+                                {topNews.slice(1, 3).map((news) => (
+                                    <div key={news.id} className="relative h-44 overflow-hidden rounded-xl">
                                         <img
-                                            src={`https://source.unsplash.com/random/400x300/?news,${index}`}
-                                            alt="Small Story"
+                                            src={news.image ? `/storage/images/news/${news.image}` : `https://picsum.photos/1920/1080?random`}
+                                            alt={news.title}
                                             className="h-full w-full object-cover"
                                         />
                                         <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black to-transparent p-4">
@@ -153,13 +196,11 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
                                             >
                                                 NEWS
                                             </span>
-                                            <h3 className="mt-1 text-lg leading-tight font-semibold text-white">
-                                                Shorter Headline For Small Story {index + 1}
-                                            </h3>
+                                            <h3 className="mt-1 text-lg leading-tight font-semibold text-white">{news.title}</h3>
                                             <div className="mt-1 text-xs text-gray-300">
-                                                <span>By Jane Doe</span>
+                                                <span>By {news.author.name}</span>
                                                 <span className="mx-1">•</span>
-                                                <span>1 hour ago</span>
+                                                <span>{news.created_at ? new Date(news.created_at).toLocaleDateString() : ''}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -167,58 +208,80 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
                             </div>
                         </div>
                     </section>
-
+                    
+                    {/* Trending News */}
                     <section className="mb-12">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Trending News</h2>
                         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-                            {[...Array(6)].map((_, i) => (
-                                <div key={i} className="flex gap-4">
+                            {trendingNews.map((news) => (
+                                <div key={news.id} className="flex gap-4">
                                     <img
-                                        src={`https://source.unsplash.com/random/100x100?sig=${i}`}
-                                        alt="Story Thumbnail"
+                                        src={news.image ? `/storage/images/news/${news.image}` : `https://picsum.photos/1920/1080?random`}
+                                        alt={news.title}
                                         className="h-24 w-24 rounded-md object-cover"
                                     />
                                     <div className="flex flex-col justify-between">
-                                        <span className="inline-block w-fit rounded bg-blue-600 px-2 py-1 text-xs font-bold text-white">NEWS</span>
-                                        <h3 className="text-md mt-1 leading-snug font-bold">
-                                            Judul Berita Lorem Ipsum Dolor Sit Lorem Ipsum Dolor Sit Amet
-                                        </h3>
-                                        <p className="mt-2 text-xs text-gray-500">Nama Jurnalis</p>
+                                        <span className="inline-block w-fit rounded bg-blue-600 px-2 py-1 text-xs font-bold text-white">
+                                            {news.subcategory?.name || 'NEWS'}
+                                        </span>
+                                        <h3 className="text-md mt-1 leading-snug font-bold">{news.title}</h3>
+                                        <p className="mt-2 text-xs text-gray-500">{news.author.name}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </section>
-
+                        
+                    {/* Video Section */}
                     <section className="mb-12 bg-gray-900 p-6 text-white">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Videos</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             {/* Video besar */}
-                            <div className="relative col-span-2 h-96 overflow-hidden rounded-2xl bg-gray-700">
-                                <img src="https://source.unsplash.com/800x600/?video" alt="Main Video" className="h-full w-full object-cover" />
-                                <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                                    <span className="inline-block rounded bg-blue-600 px-3 py-1 text-xs font-bold text-white">VIDEO</span>
-                                    <h3 className="mt-2 text-2xl leading-snug font-bold">Judul Video Lorem Ipsum Dolor Sit Amet Judul Video Lorem</h3>
-                                    <div className="mt-2 flex items-center gap-4 text-sm text-gray-300">
-                                        <span>Nama Jurnalis</span>
-                                        <span>dd-mm-yyyy</span>
+                            {videoGalleries[0] && (
+                                <div className="relative col-span-2 h-96 overflow-hidden rounded-2xl bg-gray-700">
+                                    <video
+                                        src={
+                                            videoGalleries[0].videos[0]?.video_url
+                                                ? `/storage/gallery/videos/${videoGalleries[0].videos[0].video_url}`
+                                                : undefined
+                                        }
+                                        autoPlay
+                                        loop
+                                        className="h-full w-full bg-black object-cover"
+                                        poster="https://youtu.be/-HkQo4wfmi8?si=W08bZBvLdZh5xebd"
+                                    />
+                                    <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                                        <span className="inline-block rounded bg-blue-600 px-3 py-1 text-xs font-bold text-white">
+                                            VIDEO | {videoGalleries[0].subcategory.name || 'Category'}
+                                        </span>
+                                        <h3 className="mt-2 text-2xl leading-snug font-bold">{videoGalleries[0].title}</h3>
+                                        <div className="mt-2 flex items-center gap-4 text-sm text-gray-300">
+                                            <span>{videoGalleries[0].author.name}</span>
+                                            <span>
+                                                {videoGalleries[0].videos[0]?.created_at
+                                                    ? new Date(videoGalleries[0].videos[0].created_at).toLocaleDateString()
+                                                    : ''}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            )}
 
                             {/* List video kecil */}
                             <div className="flex flex-col gap-6">
-                                {[1, 2, 3, 4].map((_, i) => (
-                                    <div key={i} className="flex gap-4">
-                                        <img
-                                            src={`https://source.unsplash.com/100x100/?video,${i}`}
-                                            alt="Video Thumbnail"
+                                {videoGalleries.slice(1, 5).map((video) => (
+                                    <div key={video.id} className="flex gap-4">
+                                        <video
+                                            src={video.videos[0]?.video_url ? `/storage/gallery/videos/${video.videos[0].video_url}` : undefined}
                                             className="h-20 w-20 rounded-md bg-gray-500 object-cover"
+                                            poster={video.videos[0]?.video_url ? undefined : 'https://via.placeholder.com/80x80?text=No+Video'}
+                                            preload="metadata"
+                                            muted
                                         />
                                         <div className="flex flex-col justify-center text-white">
-                                            <span className="text-xs text-gray-400">Category</span>
-                                            <h4 className="text-md leading-tight font-semibold">Video Lorem Ipsum Dolor Sit Amet</h4>
-                                            <p className="mt-1 text-xs text-gray-400">Nama Jurnalis</p>
+                                            <span className="text-xs text-gray-400">{video.subcategory?.name || 'Category'}</span>
+                                            <h4 className="text-md leading-tight font-semibold">{video.title}</h4>
+                                            <p className="mt-1 text-xs text-gray-400">{video.author.name}</p>
                                         </div>
                                     </div>
                                 ))}
@@ -229,29 +292,27 @@ const Index: React.FC<Props> = ({mainCategories, subCategories }) => {
                     <section className="mb-12">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Latest News</h2>
                         <div className="flex flex-col items-center gap-12">
-                            {[...Array(5)].map((_, i) => (
-                                <div key={i} className="flex w-full max-w-6xl gap-8">
+                            {recentNews.slice(5, 10).map((news) => (
+                                <div key={news.id} className="flex w-full max-w-6xl gap-8">
                                     {/* Gambar thumbnail */}
                                     <img
-                                        src={`https://source.unsplash.com/600x360/?news,${i}`}
-                                        alt="News Thumbnail"
+                                        src={news.image ? `/storage/images/news/${news.image}` : 'https://picsum.photos/1920/1080?random'}
+                                        alt={news.title}
                                         className="h-48 w-96 rounded-xl bg-gray-200 object-cover"
                                     />
 
                                     {/* Konten berita */}
                                     <div className="flex flex-col justify-between">
                                         <div>
-                                            <span className="inline-block rounded bg-blue-600 px-3 py-1 text-sm font-bold text-white">KATEGORI</span>
-                                            <h3 className="mt-2 text-lg leading-snug font-bold">
-                                                Judul Berita Lorem Ipsum Dolor Sit Amet Judul Berita Lorem
-                                            </h3>
-                                            <p className="mt-2 text-base text-gray-600">
-                                                Deskripsi Berita Lorem Ipsum Dolor Sit Amet Judul Berita Lorem
-                                            </p>
+                                            <span className="inline-block rounded bg-blue-600 px-3 py-1 text-sm font-bold text-white">
+                                                {news.subcategory?.name || 'KATEGORI'}
+                                            </span>
+                                            <h3 className="mt-2 text-lg leading-snug font-bold">{news.title}</h3>
+                                            <p className="mt-2 text-base text-gray-600">{news.content.slice(0, 100)}...</p>
                                         </div>
                                         <div className="mt-4 flex items-center gap-6 text-sm text-gray-500">
-                                            <span>Nama Jurnalis</span>
-                                            <span>dd-mm-yyyy</span>
+                                            <span>{news.author.name}</span>
+                                            <span>{news.created_at ? new Date(news.created_at).toLocaleDateString() : ''}</span>
                                         </div>
                                     </div>
                                 </div>

@@ -70,10 +70,49 @@ class M_news extends Model
 
     public function getAllNews()
     {
-        return $this->with(['subcategory', 'author'])
-                    ->where('status', 'published')
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(10)
-                    ->withQueryString();
+        return $this->with([
+            'subcategory:id,name',
+            'author:id,name'
+        ])
+            ->where('status', 'published')
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            ->withQueryString();
+    }
+
+    public function getTopNews()
+    {
+        return $this->with([
+            'subcategory:id,name',
+            'author:id,name'
+        ])
+            ->where('status', 'published')
+            ->orderBy('views_count', 'desc')
+            ->take(6)
+            ->get();
+    }
+
+    public function getRecentNews()
+    {
+        return $this->with([
+            'subcategory:id,name',
+            'author:id,name'
+        ])
+            ->where('status', 'published')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get();
+    }
+
+    public function getTrendingNews()
+    {
+        return $this->with([
+            'subcategory:id,name',
+            'author:id,name'
+        ])
+            ->where('status', 'published')
+            ->orderBy('likes_count', 'desc')
+            ->take(6)
+            ->get();
     }
 }

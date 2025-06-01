@@ -1,108 +1,115 @@
-import React from "react"
-
-import {
-  NavigationMenu,
-  NavigationMenuList,
-  NavigationMenuItem,
-  NavigationMenuTrigger,
-  NavigationMenuContent,
-  NavigationMenuLink,
-} from "@/components/ui/navigation-menu"
+import React, { useRef, useState } from 'react';
 
 interface NavSubcategory {
-  name: string
-  href: string
+    name: string;
+    href: string;
 }
 
 interface NavItem {
-  name: string
-  subcategories: NavSubcategory[]
-  href: string
+    name: string;
+    subcategories: NavSubcategory[];
+    href: string;
 }
 
 interface NavbarProps {
-  navItems: NavItem[]
+    navItems: NavItem[];
 }
 
 const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
-  return (
-    <NavigationMenu>
-      <NavigationMenuList>
-        {navItems.slice(0, 5).map((item) => (
-          <NavigationMenuItem key={item.name}>
-            {item.subcategories.length > 0 ? (
-              <>
-                <NavigationMenuTrigger>{item.name}</NavigationMenuTrigger>
-                <NavigationMenuContent>
-                  <div className="min-w-[200px] p-2 transition-transform duration-300 ease-in-out transform group-hover:translate-x-2">
-                    {item.subcategories.map((sub) => (
-                      <NavigationMenuLink asChild key={sub.name}>
-                        <a
-                          href={sub.href}
-                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
-                        >
-                          {sub.name}
-                        </a>
-                      </NavigationMenuLink>
-                    ))}
-                  </div>
-                </NavigationMenuContent>
-              </>
-            ) : (
-              <NavigationMenuLink asChild>
-                <a
-                  href={item.href}
-                  className="px-4 py-2 font-medium text-gray-800 hover:text-gray-600"
-                >
-                  {item.name}
-                </a>
-              </NavigationMenuLink>
-            )}
-          </NavigationMenuItem>
-        ))}
+    const [showMore, setShowMore] = useState(false);
+    const [activeMoreSub, setActiveMoreSub] = useState<string | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-        {/* More Dropdown */}
-        {navItems.length > 5 && (
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>More</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="grid gap-1 p-2 w-[200px]">
-                {navItems.slice(5).map((item) => (
-                  <div key={item.name} className="relative group">
-                    <NavigationMenuLink asChild>
-                      <a
-                        href={item.href}
-                        className="flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded"
-                      >
+    const handleMoreEnter = () => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setShowMore(true);
+    };
+
+    const handleMoreLeave = () => {
+        timeoutRef.current = setTimeout(() => {
+            setShowMore(false);
+            setActiveMoreSub(null);
+        }, 150); // Delay to allow user to reach dropdown
+    };
+
+    const handleSubEnter = (name: string) => {
+        setActiveMoreSub(name);
+    };
+
+    const handleSubLeave = () => {
+        setActiveMoreSub(null);
+    };
+
+    return (
+        <div className="hidden space-x-8 md:flex">
+            {navItems.slice(0, 5).map((item) => (
+                <div className="group relative" key={item.name}>
+                    <a href={item.href} className="nav-link flex items-center font-medium hover:text-gray-700">
                         {item.name}
                         {item.subcategories.length > 0 && (
-                          <span className="ml-2 text-xs">&rsaquo;</span>
+                            <i className="fas fa-chevron-down ml-1 text-xs transition-transform duration-200 group-hover:rotate-180"></i>
                         )}
-                      </a>
-                    </NavigationMenuLink>
+                    </a>
 
                     {item.subcategories.length > 0 && (
-                      <div className="absolute left-full top-0 ml-2 w-48 bg-white border rounded shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-2 z-50">
-                        {item.subcategories.map((sub) => (
-                          <a
-                            href={sub.href}
-                            key={sub.name}
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            {sub.name}
-                          </a>
-                        ))}
-                      </div>
+                        <div className="absolute top-full left-0 z-50 hidden w-48 rounded-md border border-gray-100 bg-white py-2 shadow-lg group-hover:block">
+                            {item.subcategories.map((sub) => (
+                                <a href={sub.href} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" key={sub.name}>
+                                    {sub.name}
+                                </a>
+                            ))}
+                        </div>
                     )}
-                  </div>
-                ))}
-              </div>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        )}
-      </NavigationMenuList>
-    </NavigationMenu>
-  )
-}
+                </div>
+            ))}
 
-export default Navbar
+            {navItems.length > 5 && (
+                <div className="relative" onMouseEnter={handleMoreEnter} onMouseLeave={handleMoreLeave}>
+                    <button className="nav-link flex items-center font-medium hover:text-gray-700">
+                        More <i className="fas fa-chevron-down ml-1 text-xs transition-transform duration-200"></i>
+                    </button>
+
+                    {showMore && (
+                        <div className="absolute top-full left-0 z-50 w-48 rounded-md border border-gray-100 bg-white py-2 shadow-lg">
+                            {navItems.slice(5).map((item) => (
+                                <div
+                                    key={item.name}
+                                    className="relative"
+                                    onMouseEnter={() => handleSubEnter(item.name)}
+                                    onMouseLeave={handleSubLeave}
+                                >
+                                    <a
+                                        href={item.href}
+                                        className="block flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    >
+                                        {item.name}
+                                        {item.subcategories.length > 0 && <i className="fas fa-chevron-right ml-1 text-xs"></i>}
+                                    </a>
+
+                                    {item.subcategories.length > 0 && activeMoreSub === item.name && (
+                                        <div
+                                            className="absolute top-0 left-full z-50 w-48 rounded-md border border-gray-100 bg-white py-2 shadow-lg"
+                                            onMouseEnter={() => setActiveMoreSub(item.name)}
+                                            onMouseLeave={handleSubLeave}
+                                        >
+                                            {/* Hover bridge */}
+                                            <div className="absolute top-0 -left-4 h-full w-4" />
+
+                                            {item.subcategories.map((sub) => (
+                                                <a href={sub.href} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" key={sub.name}>
+                                                    {sub.name}
+                                                </a>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default Navbar;

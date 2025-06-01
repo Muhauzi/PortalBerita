@@ -32,9 +32,11 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         // Paginate news, karena frontend mengharapkan pagination
-        $news = $this->newsModel->with(['subcategory', 'author'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10); // atau jumlah item per halaman sesuai kebutuhan
+        $topNews = $this->newsModel->getTopNews();
+        $recentNews = $this->newsModel->getRecentNews();
+        $trendingNews = $this->newsModel->getTrendingNews();
+
+        // dd($topNews, $recentNews, $trendingNews);
 
         $mainCategories = $this->mainCategoryModel->select('id', 'name')
             ->orderBy('created_at', 'desc')
@@ -44,10 +46,20 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $videos = $this->galleryModel->getVideosGalleries();
+        // dd($videos);
+
+        // dd($mainCategories, $subCategories);
+
+        
+
         return Inertia::render('Home/Index', [
-            'newsData' => $news, // Sesuai dengan views
+            'topNews' => $topNews,
+            'recentNews' => $recentNews,
+            'trendingNews' => $trendingNews,
             'mainCategories' => $mainCategories,
             'subCategories' => $subCategories,
+            'videoGalleries' => $videos,
         ])->with([
             'flash' => [
                 'message' => session('message'),
@@ -55,4 +67,6 @@ class HomeController extends Controller
             ],
         ]);
     }
+    
+
 }

@@ -12,12 +12,14 @@ use Inertia\Inertia;
 // })->name('home');
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/news/{id}', [HomeController::class, 'news'])->name('news.show');
-Route::get('/news/category/{category_id}', [HomeController::class, 'newsByCategory'])->name('news.category');
-Route::get('/news/category/{category_id}/{id}', [HomeController::class, 'newsBySubCategory'])->name('news.subcategory');
-Route::get('/gallery/{id}', [HomeController::class, 'gallery'])->name('gallery.show');
-Route::get('/contact', [HomeController::class, 'contact'])->name('contact');
-Route::get('/about', [HomeController::class, 'about'])->name('about');
+Route::prefix('public')->group(function () {
+    Route::get('/news/{id}', [HomeController::class, 'news'])->name('public.news.show');
+    Route::get('/news/category/{category_id}', [HomeController::class, 'newsByCategory'])->name('public.news.category');
+    Route::get('/news/category/{category_id}/{id}', [HomeController::class, 'newsBySubCategory'])->name('public.news.subcategory');
+    Route::get('/gallery/{id}', [HomeController::class, 'gallery'])->name('public.gallery.show');
+    Route::get('/contact', [HomeController::class, 'contact'])->name('public.contact');
+    Route::get('/about', [HomeController::class, 'about'])->name('public.about');
+});
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
