@@ -51,7 +51,7 @@ class HomeController extends Controller
 
         // dd($mainCategories, $subCategories);
 
-        
+
 
         return Inertia::render('Home/Index', [
             'topNews' => $topNews,
@@ -67,6 +67,41 @@ class HomeController extends Controller
             ],
         ]);
     }
-    
 
+    public function news($id)
+    {
+        // $news = $this->newsModel->find($id);
+        // dd($news);
+        // if (!$news) {
+        //     return response()->json(['message' => 'News not found'], 404);
+        // }
+        $mainCategories = $this->mainCategoryModel->select('id', 'name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Home/Show', [
+            'mainCategories' => $mainCategories,
+            'subCategories' => $subCategories,
+        ]);
+    }
+
+    public function test()
+    {
+        $mainCategories = $this->mainCategoryModel->select('id', 'name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Home/Show', [
+            'mainCategories' => $mainCategories,
+            'subCategories' => $subCategories,
+        ]);
+    }
 }

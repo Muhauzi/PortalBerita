@@ -289,11 +289,16 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                         </div>
                     </section>
 
+                    {/* Latest News Section */}
                     <section className="mb-12">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Latest News</h2>
                         <div className="flex flex-col items-center gap-12">
                             {recentNews.slice(5, 10).map((news) => (
-                                <div key={news.id} className="flex w-full max-w-6xl gap-8">
+                                <a
+                                    key={news.id}
+                                    href={`${news.id}`}
+                                    className="flex w-full max-w-6xl gap-8 hover:bg-gray-50 transition rounded-xl p-2"
+                                >
                                     {/* Gambar thumbnail */}
                                     <img
                                         src={news.image ? `/storage/images/news/${news.image}` : 'https://picsum.photos/1920/1080?random'}
@@ -315,7 +320,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                             <span>{news.created_at ? new Date(news.created_at).toLocaleDateString() : ''}</span>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                             ))}
                         </div>
                     </section>
