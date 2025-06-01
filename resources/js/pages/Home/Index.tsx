@@ -2,8 +2,8 @@
 
 import HomeNavbar from '@/components/home-navbar';
 import HomeTopbar from '@/components/home-topbar';
-import { Link, usePage } from '@inertiajs/react';
 import { type SharedData } from '@/types';
+import { Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
 interface mainCategory {
@@ -126,7 +126,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                             {/* Main Recent News */}
                             <a
                                 href={`/berita/${recentNews[0]?.id}`}
-                                className="group relative col-span-2 h-[30rem] overflow-hidden rounded-xl transition-transform duration-500 will-change-transform hover:scale-[1.02] hover:shadow-2xl animate-fadeInUp"
+                                className="group animate-fadeInUp relative col-span-2 h-[30rem] overflow-hidden rounded-xl transition-transform duration-500 will-change-transform hover:scale-[1.02] hover:shadow-2xl"
                                 style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
                             >
                                 <div className="relative col-span-2 h-[30rem] overflow-hidden rounded-xl">
@@ -140,11 +140,18 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 group-hover:rotate-1"
                                     />
                                     <div className="absolute right-0 bottom-0 left-0 bg-gradient-to-t from-black to-transparent p-6 transition-all duration-500 group-hover:bg-black/40">
-                                        <span className="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white transition-transform duration-300 group-hover:scale-110" style={{ width: 'fit-content' }}>
+                                        <span
+                                            className="rounded bg-red-600 px-2 py-1 text-xs font-bold text-white transition-transform duration-300 group-hover:scale-110"
+                                            style={{ width: 'fit-content' }}
+                                        >
                                             RECENT
                                         </span>
-                                        <h2 className="mt-2 text-3xl font-bold text-white transition-colors duration-300 group-hover:text-red-300">{recentNews[0]?.title}</h2>
-                                        <p className="mt-2 text-gray-200 transition-opacity duration-300 group-hover:opacity-80">{recentNews[0]?.content.slice(0, 100)}...</p>
+                                        <h2 className="mt-2 text-3xl font-bold text-white transition-colors duration-300 group-hover:text-red-300">
+                                            {recentNews[0]?.title}
+                                        </h2>
+                                        <p className="mt-2 text-gray-200 transition-opacity duration-300 group-hover:opacity-80">
+                                            {recentNews[0]?.content.slice(0, 100)}...
+                                        </p>
                                         <div className="mt-4 flex items-center text-sm text-gray-300">
                                             <span>By {recentNews[0]?.author.name}</span>
                                             <span className="mx-2">•</span>
@@ -159,25 +166,29 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                     <a
                                         key={news.id}
                                         href={`/berita/${news.id}`}
-                                        className="flex items-start gap-3 no-underline hover:no-underline animate-fadeInUp"
+                                        className="animate-fadeInUp flex items-start gap-3 no-underline hover:no-underline"
                                         style={{ animationDelay: `${0.2 + idx * 0.1}s`, animationFillMode: 'both' }}
                                     >
-                                        <div className="flex flex-row items-center mb-5 rounded-lg border border-gray-100 bg-white p-4 shadow-sm w-full transition-all duration-300 group hover:shadow-lg hover:scale-[1.025] hover:border-blue-400 relative overflow-hidden">
+                                        <div className="group relative mb-5 flex w-full flex-row items-center overflow-hidden rounded-lg border border-gray-100 bg-white p-4 shadow-sm transition-all duration-300 hover:scale-[1.025] hover:border-blue-400 hover:shadow-lg">
                                             {/* <img
                                                 className="h-20 w-20 rounded-md bg-gray-500 object-cover transition-transform duration-300 group-hover:scale-110 group-hover:rotate-1"
                                                 src={news.image ? `/storage/images/news/${news.image}` : 'https://picsum.photos/80/80?random'}
                                                 alt={news.title}
                                             /> */}
                                             <div className="flex-1">
-                                                <span className="text-xs font-bold text-blue-600 transition-colors duration-300 group-hover:text-blue-800">{news.subcategory.name}</span>
-                                                <h3 className="mt-1 font-bold transition-colors duration-300 group-hover:text-blue-700 group-hover:underline group-hover:underline-offset-2">{news.title}</h3>
+                                                <span className="text-xs font-bold text-blue-600 transition-colors duration-300 group-hover:text-blue-800">
+                                                    {news.subcategory.name}
+                                                </span>
+                                                <h3 className="mt-1 font-bold transition-colors duration-300 group-hover:text-blue-700 group-hover:underline group-hover:underline-offset-2">
+                                                    {news.title}
+                                                </h3>
                                                 {/* <p className="mt-1 text-sm text-gray-600 transition-colors duration-300 group-hover:text-gray-800">{news.content.slice(0, 60)}...</p> */}
                                                 <div className="mt-2 flex items-center text-xs text-gray-500 transition-colors duration-300 group-hover:text-gray-700">
                                                     <span>{new Date(news.created_at).toLocaleDateString()}</span>
                                                 </div>
                                             </div>
                                             {/* Animated overlay on hover */}
-                                            <div className="pointer-events-none absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                                            <div className="pointer-events-none absolute inset-0 bg-blue-600/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                         </div>
                                     </a>
                                 ))}
@@ -208,7 +219,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                             {topNews[0] && (
                                 <a
                                     href={`/berita/${topNews[0].id}`}
-                                    className="relative col-span-2 h-96 overflow-hidden rounded-xl group transition-transform duration-500 will-change-transform animate-fadeInUp"
+                                    className="group animate-fadeInUp relative col-span-2 h-96 overflow-hidden rounded-xl transition-transform duration-500 will-change-transform"
                                     style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
                                 >
                                     <img
@@ -223,8 +234,12 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                         >
                                             TOP STORY
                                         </span>
-                                        <h2 className="mt-2 text-3xl font-bold text-white transition-colors duration-300 group-hover:text-red-300">{topNews[0].title}</h2>
-                                        <p className="mt-2 text-gray-200 transition-opacity duration-300 group-hover:opacity-80">{topNews[0].content.slice(0, 100)}...</p>
+                                        <h2 className="mt-2 text-3xl font-bold text-white transition-colors duration-300 group-hover:text-red-300">
+                                            {topNews[0].title}
+                                        </h2>
+                                        <p className="mt-2 text-gray-200 transition-opacity duration-300 group-hover:opacity-80">
+                                            {topNews[0].content.slice(0, 100)}...
+                                        </p>
                                         <div className="mt-4 flex items-center text-sm text-gray-300">
                                             <span>By {topNews[0].author.name}</span>
                                             <span className="mx-2">•</span>
@@ -240,7 +255,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                     <a
                                         key={news.id}
                                         href={`/berita/${news.id}`}
-                                        className="relative h-44 overflow-hidden rounded-xl group transition-transform duration-500 will-change-transform animate-fadeInUp"
+                                        className="group animate-fadeInUp relative h-44 overflow-hidden rounded-xl transition-transform duration-500 will-change-transform"
                                         style={{ animationDelay: `${0.2 + idx * 0.1}s`, animationFillMode: 'both' }}
                                     >
                                         <img
@@ -255,7 +270,9 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                             >
                                                 NEWS
                                             </span>
-                                            <h3 className="mt-1 text-lg leading-tight font-semibold text-white transition-colors duration-300 group-hover:text-red-300">{news.title}</h3>
+                                            <h3 className="mt-1 text-lg leading-tight font-semibold text-white transition-colors duration-300 group-hover:text-red-300">
+                                                {news.title}
+                                            </h3>
                                             <div className="mt-1 text-xs text-gray-300">
                                                 <span>By {news.author.name}</span>
                                                 <span className="mx-1">•</span>
@@ -292,7 +309,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                 <a
                                     key={news.id}
                                     href={`/berita/${news.id}`}
-                                    className="flex gap-4 rounded-lg p-2 group relative overflow-hidden bg-white shadow transition-all duration-300 ease-in-out hover:shadow-lg hover:scale-[1.025]"
+                                    className="group relative flex gap-4 overflow-hidden rounded-lg bg-white p-2 shadow transition-all duration-300 ease-in-out hover:scale-[1.025] hover:shadow-lg"
                                     style={{
                                         animation: `fadeInUp 0.5s ${0.1 * idx + 0.1}s both`,
                                     }}
@@ -302,7 +319,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                         alt={news.title}
                                         className="h-24 w-24 rounded-md object-cover transition-transform duration-300 group-hover:scale-110 group-hover:rotate-1"
                                     />
-                                    <div className="flex flex-col justify-between flex-1">
+                                    <div className="flex flex-1 flex-col justify-between">
                                         <span className="inline-block w-fit rounded bg-blue-600 px-2 py-1 text-xs font-bold text-white transition-colors duration-300 group-hover:bg-blue-700">
                                             {news.subcategory?.name || 'NEWS'}
                                         </span>
@@ -314,7 +331,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                         </p>
                                     </div>
                                     {/* Animated overlay on hover */}
-                                    <div className="absolute inset-0 bg-blue-600/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+                                    <div className="pointer-events-none absolute inset-0 bg-blue-600/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                 </a>
                             ))}
                         </div>
@@ -394,82 +411,9 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                     <section className="mb-12">
                         <h2 className="mb-6 border-b border-gray-200 pb-2 text-2xl font-bold">Latest News</h2>
                         <div className="flex flex-col items-center gap-12">
-                            {recentNews.slice(5, 10).map((news, idx) => {
-                                // Use React ref and state for intersection observer
-                                const ref = React.useRef<HTMLAnchorElement>(null);
-                                const [visible, setVisible] = React.useState(false);
-
-                                React.useEffect(() => {
-                                    const node = ref.current;
-                                    if (!node) return;
-                                    const observer = new window.IntersectionObserver(
-                                        ([entry]) => {
-                                            if (entry.isIntersecting) {
-                                                setVisible(true);
-                                                observer.disconnect();
-                                            }
-                                        },
-                                        { threshold: 0.2 }
-                                    );
-                                    observer.observe(node);
-                                    return () => observer.disconnect();
-                                }, []);
-
-                                return (
-                                    <a
-                                        key={news.id}
-                                        ref={ref}
-                                        href={`/berita/${news.id}`}
-                                        className={`flex w-full max-w-6xl gap-8 rounded-xl p-2 bg-white shadow transition-all duration-300 ease-in-out group relative overflow-hidden
-                                            ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}
-                                            hover:shadow-lg hover:scale-[1.025]'
-                                        `}
-                                        style={{
-                                            transitionDelay: visible ? `${0.1 * idx + 0.1}s` : '0s',
-                                            transitionProperty: 'opacity, transform, background, box-shadow',
-                                            animation: visible ? `fadeInUp 0.5s ${0.1 * idx + 0.1}s both` : undefined,
-                                        }}
-                                    >
-                                        {/* Animated background overlay on hover */}
-                                        <div className="pointer-events-none absolute inset-0 z-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-blue-600/10" />
-                                        {/* Gambar thumbnail */}
-                                        <div className="relative z-10">
-                                            <img
-                                                src={news.image ? `/storage/images/news/${news.image}` : 'https://picsum.photos/1920/1080?random'}
-                                                alt={news.title}
-                                                className="h-48 w-96 rounded-xl bg-gray-200 object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
-                                                loading="lazy"
-                                            />
-                                            {/* Subtle image overlay on hover */}
-                                            <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                        </div>
-                                        {/* Konten berita */}
-                                        <div className="flex flex-col justify-between transition-colors duration-300 ease-in-out group-hover:text-black z-10 flex-1">
-                                            <div>
-                                                <span className="inline-block rounded bg-blue-600 px-3 py-1 text-sm font-bold text-white transition-all duration-300 group-hover:bg-blue-700 group-hover:scale-105 group-hover:shadow">
-                                                    {news.subcategory?.name || 'KATEGORI'}
-                                                </span>
-                                                <h3 className="mt-2 text-lg leading-snug font-bold transition-colors duration-300 group-hover:text-blue-700 group-hover:underline group-hover:underline-offset-2">
-                                                    {news.title}
-                                                </h3>
-                                                <p className="mt-2 text-base text-gray-600 transition-colors duration-300 group-hover:text-gray-800">
-                                                    {news.content.slice(0, 100)}...
-                                                </p>
-                                            </div>
-                                            <div className="mt-4 flex items-center gap-6 text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-700">
-                                                <span className="transition-transform duration-300 group-hover:-translate-y-1">{news.author.name}</span>
-                                                <span className="transition-transform duration-300 group-hover:translate-x-1">
-                                                    {news.created_at ? new Date(news.created_at).toLocaleDateString() : ''}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        {/* Loading shimmer while not visible */}
-                                        {!visible && (
-                                            <div className="absolute inset-0 z-20 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-pulse rounded-xl" />
-                                        )}
-                                    </a>
-                                );
-                            })}
+                            {recentNews.slice(5, 10).map((news, idx) => (
+                                <LatestNewsCard key={news.id} news={news} idx={idx} />
+                            ))}
                         </div>
                         {/* Keyframes for fadeInUp animation */}
                         <style>{`
@@ -576,6 +520,85 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                 </div>
             </footer>
         </div>
+    );
+};
+
+interface LatestNewsCardProps {
+    news: newsItem;
+    idx: number;
+}
+
+const LatestNewsCard: React.FC<LatestNewsCardProps> = ({ news, idx }) => {
+    const [visible, setVisible] = React.useState(false);
+    const ref = React.useRef<HTMLAnchorElement | null>(null);
+
+    React.useEffect(() => {
+        const node = ref.current;
+        if (!node) return;
+        const observer = new window.IntersectionObserver(
+            (entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setVisible(true);
+                        observer.disconnect();
+                    }
+                });
+            },
+            { threshold: 0.2 }
+        );
+        observer.observe(node);
+        return () => observer.disconnect();
+    }, []);
+
+    return (
+        <a
+            ref={ref}
+            href={`/berita/${news.id}`}
+            className={`group relative flex w-full max-w-6xl gap-8 overflow-hidden rounded-xl bg-white p-2 shadow transition-all duration-300 ease-in-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'} hover:scale-[1.025] hover:shadow-lg`}
+            style={{
+                transitionDelay: visible ? `${0.1 * idx + 0.1}s` : '0s',
+                transitionProperty: 'opacity, transform, background, box-shadow',
+                animation: visible ? `fadeInUp 0.5s ${0.1 * idx + 0.1}s both` : undefined,
+            }}
+        >
+            {/* Animated background overlay on hover */}
+            <div className="pointer-events-none absolute inset-0 z-0 bg-blue-600/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            {/* Gambar thumbnail */}
+            <div className="relative z-10">
+                <img
+                    src={news.image ? `/storage/images/news/${news.image}` : 'https://picsum.photos/1920/1080?random'}
+                    alt={news.title}
+                    className="h-48 w-96 rounded-xl bg-gray-200 object-cover transition-transform duration-300 ease-in-out group-hover:scale-110"
+                    loading="lazy"
+                />
+                {/* Subtle image overlay on hover */}
+                <div className="pointer-events-none absolute inset-0 rounded-xl bg-black/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+            </div>
+            {/* Konten berita */}
+            <div className="z-10 flex flex-1 flex-col justify-between transition-colors duration-300 ease-in-out group-hover:text-black">
+                <div>
+                    <span className="inline-block rounded bg-blue-600 px-3 py-1 text-sm font-bold text-white transition-all duration-300 group-hover:scale-105 group-hover:bg-blue-700 group-hover:shadow">
+                        {news.subcategory?.name || 'KATEGORI'}
+                    </span>
+                    <h3 className="mt-2 text-lg leading-snug font-bold transition-colors duration-300 group-hover:text-blue-700 group-hover:underline group-hover:underline-offset-2">
+                        {news.title}
+                    </h3>
+                    <p className="mt-2 text-base text-gray-600 transition-colors duration-300 group-hover:text-gray-800">
+                        {news.content.slice(0, 100)}...
+                    </p>
+                </div>
+                <div className="mt-4 flex items-center gap-6 text-sm text-gray-500 transition-colors duration-300 group-hover:text-gray-700">
+                    <span className="transition-transform duration-300 group-hover:-translate-y-1">{news.author.name}</span>
+                    <span className="transition-transform duration-300 group-hover:translate-x-1">
+                        {news.created_at ? new Date(news.created_at).toLocaleDateString() : ''}
+                    </span>
+                </div>
+            </div>
+            {/* Loading shimmer while not visible */}
+            {!visible && (
+                <div className="absolute inset-0 z-20 animate-pulse rounded-xl bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100" />
+            )}
+        </a>
     );
 };
 
