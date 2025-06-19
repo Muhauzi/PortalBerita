@@ -2,8 +2,6 @@
 
 import HomeNavbar from '@/components/home-navbar';
 import HomeTopbar from '@/components/home-topbar';
-import { type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
 import React from 'react';
 
 interface mainCategory {
@@ -79,7 +77,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
             })),
         href: `/category/${category.id}`,
     }));
-    const { auth } = usePage<SharedData>().props;
+    
 
     // Example data for news items
 
@@ -94,23 +92,6 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                 <div className="mx-auto flex max-w-7xl items-center justify-between">
                     <div className="text-2xl font-bold">ZiphNews</div>
                     <HomeNavbar navItems={navItems} />
-                    {auth.user ? (
-                        <Link
-                            href={route('dashboard')}
-                            className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a]"
-                        >
-                            Dashboard
-                        </Link>
-                    ) : (
-                        <>
-                            <Link
-                                href={route('login')}
-                                className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035]"
-                            >
-                                Log in
-                            </Link>
-                        </>
-                    )}
                 </div>
             </nav>
 

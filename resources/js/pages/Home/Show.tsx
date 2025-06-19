@@ -215,7 +215,7 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                                 <Card key={item.id} className="space-y-3 p-4 transition-shadow duration-200 hover:shadow-lg">
                                     <div className="h-40 w-full overflow-hidden rounded-lg bg-slate-100">
                                         <img
-                                            src={item.image ? `/storage/images/news/${item.image}` : 'storage/images/news/default.jpg'}
+                                            src={item.image ? `/storage/images/news/${item.image}` : 'https://picsum.photos/1920/1080?random'}
                                             alt={item.title}
                                             className="h-full w-full object-cover"
                                         />

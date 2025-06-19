@@ -16,6 +16,8 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('berita/{id}', [HomeController::class, 'news'])->name('showNews');
+Route::get('berita/category/{slug}', [HomeController::class, 'newsByCategory'])->name('newsByCategory');
+Route::get('berita/subcategory/{slug}', [HomeController::class, 'newsBySubCategory'])->name('newsBySubCategory');   
 
 
 require __DIR__.'/settings.php';

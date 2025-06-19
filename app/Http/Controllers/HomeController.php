@@ -80,6 +80,7 @@ class HomeController extends Controller
         
         $recentNews = $this->newsModel->getRecentNews();
         $alsoRead = $this->newsModel->getAlsoReadNews($news->subcategory_id, $id);
+        // dd($alsoRead);
 
         $mainCategories = $this->mainCategoryModel->select('id', 'name')
             ->orderBy('created_at', 'desc')
@@ -93,6 +94,71 @@ class HomeController extends Controller
             'mainArticle' => $news,
             'recentNews' => $recentNews,
             'alsoRead' => $alsoRead,
+            'mainCategories' => $mainCategories,
+            'subCategories' => $subCategories,
+        ]);
+    }
+
+    public function newsByCategory($slug)
+    {
+        // Find the main category by name
+        $mainCategory = $this->mainCategoryModel->where('name', $slug)->first();
+        // dd($mainCategory);
+
+
+        if (!$mainCategory) {
+            return response()->json(['message' => 'Category not found'], 404);
+        }
+
+        $news = $this->newsModel->getNewsByMainCategory($mainCategory->id);
+        // dd($news);
+        if (!$news) {
+            return response()->json(['message' => 'No news found for this category'], 404);
+        }
+
+        $mainCategories = $this->mainCategoryModel->select('id', 'name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
+            ->orderBy('created_at', 'desc')
+            ->get();
+        $recentNews = $this->newsModel->getRecentNews();
+
+        return Inertia::render('Home/NewsByCategory', [
+            'catName' => $slug,
+            'news' => $news,
+            'mainCategories' => $mainCategories,
+            'subCategories' => $subCategories,
+            'recentNews' => $recentNews,
+        ]);
+    }
+
+    public function newsBySubCategory($slug)
+    {
+        // Find the subcategory by slug or name
+        $subCategory = $this->subCategoryModel->where('name', $slug)->first();
+
+        if (!$subCategory) {
+            abort(404, 'Subcategory not found');
+        }
+
+        $news = $this->newsModel->getNewsByCategory($subCategory->id);
+
+        if (!$news) {
+            abort(404, 'No news found for this subcategory');
+        }
+
+        $mainCategories = $this->mainCategoryModel->select('id', 'name')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return Inertia::render('Home/NewsByCategory', [
+            'news' => $news,
             'mainCategories' => $mainCategories,
             'subCategories' => $subCategories,
         ]);

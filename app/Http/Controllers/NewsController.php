@@ -36,7 +36,12 @@ class NewsController extends Controller
             ->paginate($perPage)
             ->withQueryString();
 
-        return Inertia::render('news/Index', [
+        // return Inertia::render('news/Index', [
+        //     'newsData' => $news,
+        //     'filters' => $request->all(['search', 'perPage']),
+        // ]);
+
+        return response()->json([
             'newsData' => $news,
             'filters' => $request->all(['search', 'perPage']),
         ]);

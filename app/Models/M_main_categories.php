@@ -61,8 +61,12 @@ class M_main_categories extends Model
     {
         $isUsed = $this->subCategories()->where('id_main_categories', $id)->exists();
         return $isUsed;
-        
     }
+
+    /**
+     * Mengambil berita berdasrkan main category.
+     */
+
 
 
 

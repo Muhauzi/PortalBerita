@@ -139,4 +139,26 @@ class M_news extends Model
             ->take(4)
             ->get();
     }
+
+    /**
+     * Mengambil main category berdasarkan subcategory_id.
+     */
+
+
+    public function getNewsByMainCategory($id)
+    {
+        return $this->with([
+            'subcategory:id,name',
+            'subcategory.mainCategory:id,name',
+            'author:id,name'
+        ])
+            ->where('status', 'published')
+            ->whereHas('subcategory', function ($query) use ($id) {
+                $query->where('id_main_categories', $id);
+            })
+            ->orderBy('created_at', 'desc')
+            ->inRandomOrder()
+            ->take(4)
+            ->get();
+    }
 }

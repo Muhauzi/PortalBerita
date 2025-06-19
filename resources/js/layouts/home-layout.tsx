@@ -10,7 +10,6 @@ interface NavSubItem {
 
 interface NavItem {
   name: string;
-  href: string;
   subcategories: NavSubItem[];
 }
 
@@ -60,9 +59,9 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, navItems }) => {
             <h4 className="mb-4 font-bold">Quick Links</h4>
             <ul className="space-y-2">
               {navItems.slice(0, 4).map((item) => (
-                <li key={item.href}>
+                <li key={item.name}>
                   <a
-                    href={item.href}
+                    href="#"
                     className="text-gray-400 transition hover:text-white"
                   >
                     {item.name}
@@ -75,9 +74,9 @@ const HomeLayout: React.FC<HomeLayoutProps> = ({ children, navItems }) => {
             <h4 className="mb-4 font-bold">Kategori Populer</h4>
             <ul className="space-y-2">
               {navItems.slice(4, 8).map((item) => (
-                <li key={item.href}>
+                <li key={item.name}>
                   <a
-                    href={item.href}
+                    href="#"
                     className="text-gray-400 transition hover:text-white"
                   >
                     {item.name}
