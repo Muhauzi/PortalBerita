@@ -4,8 +4,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import HomeLayout from '@/layouts/home-layout';
-import { Link } from '@inertiajs/react';
-import React from 'react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
+import React, { useEffect } from 'react';
+import Swal from 'sweetalert2';
 
 interface MainCategory {
     id: number;
@@ -38,15 +39,36 @@ interface NewsItem {
     likes_count: number;
 }
 
+interface Comments {
+    id: string;
+    user_id: number;
+    news_id: number;
+    comment: string;
+    created_at: string;
+    user: {
+        id: number;
+        name: string;
+    };
+}
+
 interface Props {
     mainCategories: MainCategory[];
     subCategories: SubCategory[];
     mainArticle: NewsItem;
     recentNews: NewsItem[];
     alsoRead: NewsItem[];
+    comments?: Comments[]; // Opsional, jika ingin menampilkan komentar
+    statusLogin: boolean; // Opsional, untuk cek apakah user sudah login
+    auth: {
+        user: {
+            id: number;
+            name: string;
+        } | null;
+    };
 }
 
-const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, recentNews, alsoRead }) => {
+const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, recentNews, alsoRead, comments, statusLogin, auth }) => {
+    const userId = auth.user?.id;
     // Bangun navItems untuk HomeLayout dari mainCategories + subCategories
     const navItems = mainCategories.map((cat) => ({
         name: cat.name,
@@ -66,6 +88,61 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
             day: '2-digit',
             month: 'long',
             year: 'numeric',
+        });
+    };
+
+    const { data, setData, post, processing, reset, errors } = useForm({
+        comment: '',
+        news_id: mainArticle.id, // <- penting!
+    });
+
+    const { props } = usePage<{ flash?: { message?: string } }>();
+    const flashMessage = props.flash?.message;
+
+    useEffect(() => {
+        if (flashMessage) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Sukses!',
+                text: flashMessage,
+            });
+        }
+    }, [flashMessage]);
+
+    const commentSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post('/submit_comment', {
+            onSuccess: () => reset(), // Kosongkan form kalau berhasil
+        });
+    };
+
+    const handleDelete = (id: string) => {
+        Swal.fire({
+            title: 'Hapus Komentar',
+            text: 'Apakah Anda yakin ingin menghapus komentar ini?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                router.delete(`/delete_comment/${id}`, {
+                    onSuccess: () => {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Komentar Dihapus',
+                            text: 'Komentar berhasil dihapus.',
+                        });
+                    },
+                    onError: () => {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal Menghapus',
+                            text: 'Terjadi kesalahan saat menghapus komentar.',
+                        });
+                    },
+                });
+            }
         });
     };
 
@@ -128,19 +205,73 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                             <section className="mt-12">
                                 <h2 className="mb-6 text-2xl font-semibold text-slate-900">Komentar</h2>
                                 <div className="rounded-lg bg-white p-6 shadow">
-                                    <form className="space-y-4">
-                                        <textarea
-                                            className="w-full rounded border p-2 focus:ring focus:outline-none"
-                                            rows={3}
-                                            placeholder="Tulis komentar Anda..."
-                                        />
-                                        <button type="submit" className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700">
-                                            Kirim
-                                        </button>
-                                    </form>
+                                    {/* Debug: Print statusLogin */}
+                                    {statusLogin === true ? (
+                                        <form className="space-y-4" onSubmit={commentSubmit}>
+                                            <textarea
+                                                className="w-full rounded border p-2 focus:ring focus:outline-none"
+                                                id="comment"
+                                                rows={3}
+                                                placeholder="Tulis komentar Anda..."
+                                                value={data.comment}
+                                                onChange={(e) => setData('comment', e.target.value)}
+                                            />
+                                            {errors.comment && <div className="text-sm text-red-500">{errors.comment}</div>}
+                                            <button
+                                                type="submit"
+                                                disabled={processing}
+                                                className="rounded bg-indigo-600 px-4 py-2 text-white hover:bg-indigo-700"
+                                            >
+                                                Kirim
+                                            </button>
+                                        </form>
+                                    ) : (
+                                        <div className="text-sm text-slate-500">
+                                            <Link href="/login" className="text-indigo-600 hover:underline">
+                                                Login
+                                            </Link>{' '}
+                                            untuk menulis komentar.
+                                        </div>
+                                    )}
                                     {/* Daftar komentar (dummy) */}
                                     <div className="mt-6 space-y-4">
-                                        <div className="flex items-start gap-3">
+                                        {comments && comments.length > 0 ? (
+                                            comments.map((comment) => (
+                                                <div key={comment.id} className="flex items-start gap-3">
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarFallback>{comment.user.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="font-medium text-slate-800">{comment.user.name}</div>
+                                                            {statusLogin && userId === comment.user_id && (
+                                                                <button
+                                                                    type="button"
+                                                                    className="ml-2 text-xs text-red-500 hover:underline"
+                                                                    onClick={() => handleDelete(comment.id)}
+                                                                >
+                                                                    Hapus
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div className="text-sm text-slate-700">{comment.comment}</div>
+                                                        <div className="mt-1 text-xs text-slate-500">
+                                                            {new Date(comment.created_at).toLocaleString('id-ID', {
+                                                                day: '2-digit',
+                                                                month: 'long',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit',
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-sm text-slate-500">Belum ada komentar.</p>
+                                        )}
+                                        {/* Contoh komentar dummy */}
+                                        {/* <div className="flex items-start gap-3">
                                             <Avatar className="h-8 w-8">
                                                 <AvatarFallback>U</AvatarFallback>
                                             </Avatar>
@@ -149,8 +280,7 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                                                 <div className="text-sm text-slate-700">Artikel ini sangat bermanfaat, terima kasih!</div>
                                                 <div className="mt-1 text-xs text-slate-500">1 jam yang lalu</div>
                                             </div>
-                                        </div>
-                                        {/* Tambahkan komentar lain di sini */}
+                                        </div> */}
                                     </div>
                                 </div>
                             </section>
@@ -166,7 +296,7 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                                     .map((news) => (
                                         <Card
                                             key={news.id}
-                                            className="p-2 transition-shadow duration-200 hover:shadow-lg hover:border-indigo-400 border border-transparent relative group"
+                                            className="group relative border border-transparent p-2 transition-shadow duration-200 hover:border-indigo-400 hover:shadow-lg"
                                         >
                                             <div className="flex flex-row gap-4">
                                                 {/* Kolom kiri: Thumbnail */}
@@ -190,7 +320,7 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                                                         <CardTitle>
                                                             <Link
                                                                 href={`/berita/${news.id}`}
-                                                                className="line-clamp-2 text-sm leading-snug font-bold text-slate-900 hover:underline transition-colors duration-200"
+                                                                className="line-clamp-2 text-sm leading-snug font-bold text-slate-900 transition-colors duration-200 hover:underline"
                                                             >
                                                                 {news.title}
                                                             </Link>
@@ -200,7 +330,7 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                                                 </div>
                                             </div>
                                             {/* Floating effect on hover */}
-                                            <div className="absolute inset-0 rounded-xl pointer-events-none transition-transform duration-200 group-hover:scale-105 group-hover:-translate-y-1 group-hover:shadow-2xl"></div>
+                                            <div className="pointer-events-none absolute inset-0 rounded-xl transition-transform duration-200 group-hover:-translate-y-1 group-hover:scale-105 group-hover:shadow-2xl"></div>
                                         </Card>
                                     ))}
                             </div>

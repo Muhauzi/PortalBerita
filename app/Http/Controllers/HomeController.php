@@ -13,8 +13,10 @@ use App\Models\M_sub_categories;
 use App\Models\M_galleries;
 use App\Models\M_gallery_photos;
 use App\Models\M_gallery_videos;
-
+use App\Models\M_news_comments;
 use Inertia\Inertia;
+use \Illuminate\Support\Facades\Auth;
+
 
 class HomeController extends Controller
 {
@@ -69,17 +71,17 @@ class HomeController extends Controller
         ]);
     }
 
-    public function news($id)
+    public function news($slug)
     {
-        $news = $this->newsModel->getNews($id);
+        $news = $this->newsModel->getNews($slug);
         // dd($news);
         if (!$news) {
             return response()->json(['message' => 'News not found'], 404);
         }
 
-        
+
         $recentNews = $this->newsModel->getRecentNews();
-        $alsoRead = $this->newsModel->getAlsoReadNews($news->subcategory_id, $id);
+        $alsoRead = $this->newsModel->getAlsoReadNews($news->subcategory_id, $slug);
         // dd($alsoRead);
 
         $mainCategories = $this->mainCategoryModel->select('id', 'name')
@@ -90,43 +92,46 @@ class HomeController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
+        $comments = M_news_comments::where('news_id', $news->id)
+            ->with('user:id,name')
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        $statusLogin = Auth::check();
+
         return Inertia::render('Home/Show', [
             'mainArticle' => $news,
             'recentNews' => $recentNews,
             'alsoRead' => $alsoRead,
             'mainCategories' => $mainCategories,
             'subCategories' => $subCategories,
+            'statusLogin' => $statusLogin,
+            'comments' => $comments,
+        ])->with([
+            'flash' => [
+                'message' => session('message'),
+                'type' => session('type'),
+            ],
         ]);
     }
 
-    public function newsByCategory($slug)
+    public function newsByCategory(M_main_categories $M_main_categories)
     {
-        // Find the main category by name
-        $mainCategory = $this->mainCategoryModel->where('name', $slug)->first();
-        // dd($mainCategory);
+        // dd($M_main_categories);
+        // Data category sudah otomatis ter-bind, jadi ga perlu query slug manual
+        $news = $this->newsModel->getNewsByMainCategory($M_main_categories->id);
 
-
-        if (!$mainCategory) {
-            return response()->json(['message' => 'Category not found'], 404);
-        }
-
-        $news = $this->newsModel->getNewsByMainCategory($mainCategory->id);
-        // dd($news);
-        if (!$news) {
+        if ($news->isEmpty()) {
             return response()->json(['message' => 'No news found for this category'], 404);
         }
 
-        $mainCategories = $this->mainCategoryModel->select('id', 'name')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $mainCategories = $this->mainCategoryModel->select('id', 'name')->orderBy('created_at', 'desc')->get();
+        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')->orderBy('created_at', 'desc')->get();
         $recentNews = $this->newsModel->getRecentNews();
 
         return Inertia::render('Home/NewsByCategory', [
-            'catName' => $slug,
+            'catName' => $M_main_categories->name,
             'news' => $news,
             'mainCategories' => $mainCategories,
             'subCategories' => $subCategories,
@@ -134,35 +139,33 @@ class HomeController extends Controller
         ]);
     }
 
-    public function newsBySubCategory($slug)
+    public function newsBySubCategory(M_main_categories $M_main_categories, M_sub_categories $M_sub_categories)
     {
-        // Find the subcategory by slug or name
-        $subCategory = $this->subCategoryModel->where('name', $slug)->first();
-
-        if (!$subCategory) {
-            abort(404, 'Subcategory not found');
+        // Pastikan subcategory belong to main category kalau mau validasi strict
+        if ($M_sub_categories->id_main_categories !== $M_main_categories->id) {
+            abort(404, 'Subcategory does not belong to this main category');
         }
 
-        $news = $this->newsModel->getNewsByCategory($subCategory->id);
+        $news = $this->newsModel->getNewsBySubCategory($M_sub_categories->id);
 
-        if (!$news) {
+        if ($news->isEmpty()) {
             abort(404, 'No news found for this subcategory');
         }
 
-        $mainCategories = $this->mainCategoryModel->select('id', 'name')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $mainCategories = $this->mainCategoryModel->select('id', 'name')->orderBy('created_at', 'desc')->get();
+        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')->orderBy('created_at', 'desc')->get();
+        $recentNews = $this->newsModel->getRecentNews();
 
-        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return Inertia::render('Home/NewsByCategory', [
+        return Inertia::render('Home/SubCategoryNewsPage', [
             'news' => $news,
             'mainCategories' => $mainCategories,
             'subCategories' => $subCategories,
+            'mainCategoryName' => $M_main_categories->name,
+            'subCategoryName' => $M_sub_categories->name,
+            'recentNews' => $recentNews,
         ]);
     }
+
 
     public function create(Request $request): Response
     {
@@ -170,6 +173,39 @@ class HomeController extends Controller
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
         ]);
+    }
+
+    public function storeComment(Request $request)
+    {
+        $validated = $request->validate([
+            'news_id' => 'required|exists:news,id',
+            'comment' => 'required|string|max:1000',
+        ]);
+
+        $comment = new M_news_comments();
+        $comment->news_id = $validated['news_id'];
+        $comment->user_id = Auth::id();
+        $comment->comment = $validated['comment'];
+        $comment->save();
+
+        return redirect()->back()->with('message', 'Komentar berhasil ditambahkan!');
+    }
+
+    public function deleteComment($id)
+    {
+        $comment = M_news_comments::find($id);
+
+        if (!$comment) {
+            return redirect()->back()->with('message', 'Komentar tidak ditemukan!');
+        }
+
+        if ($comment->user_id !== Auth::id()) {
+            return redirect()->back()->with('message', 'Anda tidak memiliki izin untuk menghapus komentar ini!');
+        }
+
+        $comment->delete();
+
+        return redirect()->back()->with('message', 'Komentar berhasil dihapus!');
     }
 
     public function test()

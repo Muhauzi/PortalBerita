@@ -80,14 +80,15 @@ class M_news extends Model
             ->withQueryString();
     }
 
-    public function getNews($id)
+    public function getNews($slug)
     {
         return $this->with([
             'subcategory:id,name',
             'author:id,name'
         ])
-            ->where('status', 'published')
-            ->findOrFail($id);
+        ->where('status', 'published')
+        ->where('slug', $slug)
+        ->firstOrFail();
     }
 
     public function getTopNews()
@@ -126,7 +127,7 @@ class M_news extends Model
             ->get();
     }
 
-    public function getAlsoReadNews($id_subcategory, $news_id)
+    public function getAlsoReadNews($id_subcategory, $slug)
     {
         return $this->with([
             'subcategory:id,name',
@@ -134,7 +135,7 @@ class M_news extends Model
         ])
             ->where('status', 'published')
             ->where('subcategory_id', $id_subcategory)
-            ->where('id', '!=', $news_id)
+            ->where('slug', '!=', $slug)
             ->inRandomOrder()
             ->take(4)
             ->get();
@@ -161,4 +162,21 @@ class M_news extends Model
             ->take(4)
             ->get();
     }
+
+    public function getNewsBySubCategory($subcategoryId)
+    {
+        return $this->with([
+            'subcategory:id,name',
+            'subcategory.mainCategory:id,name',
+            'author:id,name'
+        ])
+            ->where('status', 'published')
+            ->where('subcategory_id', $subcategoryId)
+            ->orderBy('created_at', 'desc')
+            ->inRandomOrder()
+            ->take(4)
+            ->get();
+    }
+
+
 }

@@ -23,6 +23,10 @@ class M_main_categories extends Model
         'updated_at' => 'datetime',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'name'; // atau 'slug' kalau slug di DB
+    }
     /**
      * Relasi ke model SubCategory.
      */
@@ -30,6 +34,13 @@ class M_main_categories extends Model
     {
         return $this->hasMany(M_sub_categories::class, 'id_main_categories');
     }
+
+    public function mSubCategories() 
+    {
+        return $this->hasMany(M_sub_categories::class, 'id_main_categories');
+    }
+
+    
     /**
      * Relasi ke model Gallery.
      */
@@ -66,9 +77,4 @@ class M_main_categories extends Model
     /**
      * Mengambil berita berdasrkan main category.
      */
-
-
-
-
-
 }

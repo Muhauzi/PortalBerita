@@ -26,6 +26,7 @@ interface newsItem {
         name: string;
     };
     title: string;
+    slug: string;
     content: string;
     image: string;
     created_at: string;
@@ -55,6 +56,7 @@ interface videoGallery {
         name: string;
     };
 }
+
 
 interface Props {
     topNews: newsItem[];
@@ -106,7 +108,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                             {/* Main Recent News */}
                             <a
-                                href={`/berita/${recentNews[0]?.id}`}
+                                href={`/berita/baca/${recentNews[0]?.slug}`}
                                 className="group animate-fadeInUp relative col-span-2 h-[30rem] overflow-hidden rounded-xl transition-transform duration-500 will-change-transform hover:scale-[1.02] hover:shadow-2xl"
                                 style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
                             >
@@ -146,7 +148,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                 {recentNews.slice(1, 4).map((news, idx) => (
                                     <a
                                         key={news.id}
-                                        href={`/berita/${news.id}`}
+                                        href={`/berita/baca/${news.slug}`}
                                         className="animate-fadeInUp flex items-start gap-3 no-underline hover:no-underline"
                                         style={{ animationDelay: `${0.2 + idx * 0.1}s`, animationFillMode: 'both' }}
                                     >
@@ -199,7 +201,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                             {/* Gambar besar kiri */}
                             {topNews[0] && (
                                 <a
-                                    href={`/berita/${topNews[0].id}`}
+                                    href={`/berita/baca/${topNews[0].slug}`}
                                     className="group animate-fadeInUp relative col-span-2 h-96 overflow-hidden rounded-xl transition-transform duration-500 will-change-transform"
                                     style={{ animationDelay: '0.1s', animationFillMode: 'both' }}
                                 >
@@ -235,7 +237,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                                 {topNews.slice(1, 3).map((news, idx) => (
                                     <a
                                         key={news.id}
-                                        href={`/berita/${news.id}`}
+                                        href={`/berita/baca/${news.slug}`}
                                         className="group animate-fadeInUp relative h-44 overflow-hidden rounded-xl transition-transform duration-500 will-change-transform"
                                         style={{ animationDelay: `${0.2 + idx * 0.1}s`, animationFillMode: 'both' }}
                                     >
@@ -289,7 +291,7 @@ const Index: React.FC<Props> = ({ topNews, recentNews, trendingNews, mainCategor
                             {trendingNews.map((news, idx) => (
                                 <a
                                     key={news.id}
-                                    href={`/berita/${news.id}`}
+                                    href={`/berita/baca/${news.slug}`}
                                     className="group relative flex gap-4 overflow-hidden rounded-lg bg-white p-2 shadow transition-all duration-300 ease-in-out hover:scale-[1.025] hover:shadow-lg"
                                     style={{
                                         animation: `fadeInUp 0.5s ${0.1 * idx + 0.1}s both`,
@@ -534,7 +536,7 @@ const LatestNewsCard: React.FC<LatestNewsCardProps> = ({ news, idx }) => {
     return (
         <a
             ref={ref}
-            href={`/berita/${news.id}`}
+            href={`/berita/baca/${news.slug}`}
             className={`group relative flex w-full max-w-6xl gap-8 overflow-hidden rounded-xl bg-white p-2 shadow transition-all duration-300 ease-in-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'} hover:scale-[1.025] hover:shadow-lg`}
             style={{
                 transitionDelay: visible ? `${0.1 * idx + 0.1}s` : '0s',

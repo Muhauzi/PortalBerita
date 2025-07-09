@@ -4,11 +4,15 @@ use App\Http\Controllers\CategoriesController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\GalleryController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
+        if (Auth::user()->role == 'user') {
+            return redirect('/');
+        }
         return Inertia::render('dashboard');
     })->name('dashboard');
 

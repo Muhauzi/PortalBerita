@@ -19,6 +19,11 @@ class M_sub_categories extends Model
         'description',
     ];
 
+    public function getRouteKeyName()
+    {
+        return 'name'; // sama
+    }
+
     /**
      * Relasi ke model MainCategory.
      */
@@ -49,10 +54,9 @@ class M_sub_categories extends Model
     {
         return $this->news()->where('subcategory_id', $id)->exists();
     }
-    
+
     public function isUsedInGallery($id)
     {
         return $this->galleries()->where('subcategory_id', $id)->exists();
     }
 }
-

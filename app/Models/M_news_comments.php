@@ -33,10 +33,12 @@ class M_news_comments extends Model
     {
         parent::boot();
 
-        // Generate UUID saat membuat komentar baru
         static::creating(function ($model) {
             if (!$model->id) {
                 $model->id = (string) Str::uuid();
+            }
+            if (!$model->created_at) {
+                $model->created_at = now();
             }
         });
     }

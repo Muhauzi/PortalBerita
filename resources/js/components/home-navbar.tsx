@@ -1,6 +1,6 @@
-import React, { useRef, useState } from 'react';
 import { type SharedData } from '@/types';
-import { usePage, Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
+import React, { useRef, useState } from 'react';
 
 interface NavSubcategory {
     name: string;
@@ -53,7 +53,7 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
             <div className="hidden space-x-8 md:flex">
                 {navItems.slice(0, 5).map((item) => (
                     <div className="group relative" key={item.name}>
-                        <a href={`/berita/category/${item.name}`} className="nav-link flex items-center font-medium hover:text-gray-700">
+                        <a href={`/berita/${item.name}`} className="nav-link flex items-center font-medium hover:text-gray-700">
                             {item.name}
                             {item.subcategories.length > 0 && (
                                 <i className="fas fa-chevron-down ml-1 text-xs transition-transform duration-200 group-hover:rotate-180"></i>
@@ -63,7 +63,11 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
                         {item.subcategories.length > 0 && (
                             <div className="absolute top-full left-0 z-50 hidden w-48 rounded-md border border-gray-100 bg-white py-2 shadow-lg group-hover:block">
                                 {item.subcategories.map((sub) => (
-                                    <a href={sub.href} className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" key={sub.name}>
+                                    <a
+                                        href={`/berita/${item.name}/${sub.name}`}
+                                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                        key={sub.name}
+                                    >
                                         {sub.name}
                                     </a>
                                 ))}
@@ -80,10 +84,7 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
 
                         {showMore && (
                             <div className="absolute top-full left-0 z-50 w-48 rounded-md border border-gray-100 bg-white py-2 shadow-lg">
-                                <a
-                                    href="/"
-                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 font-semibold"
-                                >
+                                <a href="/" className="block px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-100">
                                     Home
                                 </a>
                                 {navItems.slice(5).map((item) => (
@@ -94,7 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
                                         onMouseLeave={handleSubLeave}
                                     >
                                         <a
-                                            href={`/berita/category/${item.name}`}
+                                            href={`/berita/${item.name}`}
                                             className="block flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                         >
                                             {item.name}
@@ -112,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
 
                                                 {item.subcategories.map((sub) => (
                                                     <a
-                                                        href={sub.href}
+                                                        href={`/berita/${item.name}/${sub.name}`}
                                                         className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                                                         key={sub.name}
                                                     >
@@ -123,28 +124,39 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
                                         )}
                                     </div>
                                 ))}
-
-                                {auth.user ? (
-                                    <Link
-                                        href={route('dashboard')}
-                                        className="inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a]"
-                                    >
-                                        Dashboard
-                                    </Link>
-                                ) : (
-                                    <>
-                                        <Link
-                                            href={route('login')}
-                                            className="inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035]"
-                                        >
-                                            Log in
-                                        </Link>
-                                    </>
-                                )}
                             </div>
                         )}
                     </div>
                 )}
+
+                <div className="flex items-center">
+                    {auth.user ? (
+                        auth.user.role === 'user' ? (
+                            <Link
+                                href={route('logout')}
+                                method="post"
+                                as="button"
+                                className="nav-link flex items-center font-medium hover:text-gray-700 inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] ml-4"
+                            >
+                                Logout
+                            </Link>
+                        ) : (
+                            <Link
+                                href={route('dashboard')}
+                                className="nav-link flex items-center font-medium hover:text-gray-700 inline-block rounded-sm border border-[#19140035] px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#1915014a] ml-4"
+                            >
+                                Dashboard
+                            </Link>
+                        )
+                    ) : (
+                        <Link
+                            href={route('login')}
+                            className="nav-link flex items-center font-medium hover:text-gray-700 inline-block rounded-sm border border-transparent px-5 py-1.5 text-sm leading-normal text-[#1b1b18] hover:border-[#19140035] ml-4"
+                        >
+                            Log in
+                        </Link>
+                    )}
+                </div>
             </div>
 
             {/* Mobile Navbar */}
@@ -167,7 +179,7 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
                                         onClick={() => setActiveMobileSub((prev) => (prev === item.name ? null : item.name))}
                                     >
                                         <span>
-                                            <a href={`/berita/category/${item.name}`}>{item.name}</a>
+                                            <a href={`/berita/${item.name}`}>{item.name}</a>
                                         </span>
                                         {item.subcategories.length > 0 && (
                                             <i
@@ -181,7 +193,7 @@ const Navbar: React.FC<NavbarProps> = ({ navItems }) => {
                                         <div className="mt-1 ml-4">
                                             {item.subcategories.map((sub) => (
                                                 <a
-                                                    href={sub.href}
+                                                    href={`/berita/${item.name}/${sub.name}`}
                                                     className="block rounded px-2 py-1 text-sm text-gray-700 hover:bg-gray-100"
                                                     key={sub.name}
                                                 >

@@ -28,7 +28,7 @@ interface NewsItem {
         name: string;
     };
     title: string;
-    slug: string; // Slug untuk URL
+    slug: string; // Slug untuk URL berita
     content: string; // HTML string
     image: string; // URL ke gambar
     created_at: string; // ISO string
@@ -46,7 +46,7 @@ interface Props {
     recentNews: NewsItem[]; // Daftar berita terbaru untuk sidebar
 }
 
-const NewsByCategory: React.FC<Props> = ({ mainCategories, subCategories, news, catName, recentNews }) => {
+const SubCategoryNewsPage: React.FC<Props> = ({ mainCategories, subCategories, news, catName, recentNews }) => {
     // Bangun navItems untuk HomeLayout dari mainCategories + subCategories
     const navItems = mainCategories.map((cat) => ({
         name: cat.name,
@@ -227,4 +227,4 @@ const LatestNewsCard: React.FC<LatestNewsCardProps> = ({ news, idx }) => {
     );
 };
 
-export default NewsByCategory;
+export default SubCategoryNewsPage;
