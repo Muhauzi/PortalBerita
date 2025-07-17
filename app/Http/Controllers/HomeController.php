@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Response;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cookie;
 
 
 use App\Models\M_news;
@@ -14,6 +17,7 @@ use App\Models\M_galleries;
 use App\Models\M_gallery_photos;
 use App\Models\M_gallery_videos;
 use App\Models\M_news_comments;
+use App\Models\M_news_likes;
 use Inertia\Inertia;
 use \Illuminate\Support\Facades\Auth;
 
@@ -71,36 +75,59 @@ class HomeController extends Controller
         ]);
     }
 
-    public function news($slug)
+    public function news($slug, Request $request)
     {
+        // 1. Ambil berita
         $news = $this->newsModel->getNews($slug);
-        // dd($news);
+    
         if (!$news) {
             return response()->json(['message' => 'News not found'], 404);
         }
-
-
+    
+        // 2. Ambil atau generate client_id dari cookie
+        $clientId = $request->cookie('client_id') ?? Str::uuid()->toString();
+    
+        // 3. Cek apakah client sudah melihat berita ini
+        $alreadyViewed = DB::table('news_views')
+            ->where('news_id', $news->id)
+            ->where('client_id', $clientId)
+            ->exists();
+    
+        // 4. Jika belum, simpan ke news_views dan increment views_count
+        if (!$alreadyViewed) {
+            DB::table('news_views')->insert([
+                'news_id' => $news->id,
+                'client_id' => $clientId,
+                'created_at' => now(),
+            ]);
+    
+            $news->increment('views_count');
+        }
+    
+        // 5. Ambil data pendukung
         $recentNews = $this->newsModel->getRecentNews();
         $alsoRead = $this->newsModel->getAlsoReadNews($news->subcategory_id, $slug);
-        // dd($alsoRead);
-
-        $mainCategories = $this->mainCategoryModel->select('id', 'name')
+    
+        $mainCategories = $this->mainCategoryModel
+            ->select('id', 'name')
             ->orderBy('created_at', 'desc')
             ->get();
-
-        $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
+    
+        $subCategories = $this->subCategoryModel
+            ->select('id', 'name', 'id_main_categories')
             ->orderBy('created_at', 'desc')
             ->get();
-
+    
         $comments = M_news_comments::where('news_id', $news->id)
             ->with('user:id,name')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
-
+    
         $statusLogin = Auth::check();
-
-        return Inertia::render('Home/Show', [
+    
+        // 6. Buat Inertia response
+        $inertiaResponse = Inertia::render('Home/Show', [
             'mainArticle' => $news,
             'recentNews' => $recentNews,
             'alsoRead' => $alsoRead,
@@ -114,7 +141,64 @@ class HomeController extends Controller
                 'type' => session('type'),
             ],
         ]);
+    
+        // 7. Konversi ke Laravel response
+        $response = $inertiaResponse->toResponse($request);
+    
+        // 8. Tambahkan cookie jika belum ada
+        if (!$request->cookie('client_id')) {
+            $response->withCookie(
+                cookie('client_id', $clientId, 60 * 24 * 365) // 1 tahun
+            );
+        }
+    
+        return $response;
     }
+
+    // public function news($slug)
+    // {
+    //     $news = $this->newsModel->getNews($slug);
+    //     // dd($news);
+    //     if (!$news) {
+    //         return response()->json(['message' => 'News not found'], 404);
+    //     }
+
+
+    //     $recentNews = $this->newsModel->getRecentNews();
+    //     $alsoRead = $this->newsModel->getAlsoReadNews($news->subcategory_id, $slug);
+    //     // dd($alsoRead);
+
+    //     $mainCategories = $this->mainCategoryModel->select('id', 'name')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+
+    //     $subCategories = $this->subCategoryModel->select('id', 'name', 'id_main_categories')
+    //         ->orderBy('created_at', 'desc')
+    //         ->get();
+
+    //     $comments = M_news_comments::where('news_id', $news->id)
+    //         ->with('user:id,name')
+    //         ->orderBy('created_at', 'desc')
+    //         ->take(5)
+    //         ->get();
+
+    //     $statusLogin = Auth::check();
+
+    //     return Inertia::render('Home/Show', [
+    //         'mainArticle' => $news,
+    //         'recentNews' => $recentNews,
+    //         'alsoRead' => $alsoRead,
+    //         'mainCategories' => $mainCategories,
+    //         'subCategories' => $subCategories,
+    //         'statusLogin' => $statusLogin,
+    //         'comments' => $comments,
+    //     ])->with([
+    //         'flash' => [
+    //             'message' => session('message'),
+    //             'type' => session('type'),
+    //         ],
+    //     ]);
+    // }
 
     public function newsByCategory(M_main_categories $M_main_categories)
     {
@@ -206,6 +290,40 @@ class HomeController extends Controller
         $comment->delete();
 
         return redirect()->back()->with('message', 'Komentar berhasil dihapus!');
+    }
+
+    public function likeNews(Request $request, $id)
+    {
+        $clientId = $request->cookie('client_id') ?? $request->input('client_id');
+
+        if (!$clientId) {
+            return response()->json(['message' => 'Client ID not found'], 400);
+        }
+
+        $news = M_news::where('id', $id)->firstOrFail();
+
+        $alreadyLiked = M_news_likes::where('news_id', $news->id)
+            ->where('client_id', $clientId)
+            ->exists();
+
+        if ($alreadyLiked) {
+            // Hapus like jika sudah ada
+            M_news_likes::where('news_id', $news->id)
+                ->where('client_id', $clientId)
+                ->delete();
+            $news->decrement('likes_count');
+
+            return redirect()->back()->withErrors(['message' => 'Like telah dihapus.']);
+        }
+
+        M_news_likes::create([
+            'news_id'  => $news->id,
+            'client_id' => $clientId,
+            'created_at' => now(),
+        ]);
+        $news->increment('likes_count');
+
+        return redirect()->back();
     }
 
     public function test()

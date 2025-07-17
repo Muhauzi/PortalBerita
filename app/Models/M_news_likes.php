@@ -16,7 +16,7 @@ class M_news_likes extends Model
 
     protected $fillable = [
         'news_id',
-        'id_users',
+        'client_id',
         'created_at',
     ];
 

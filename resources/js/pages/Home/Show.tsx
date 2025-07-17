@@ -7,6 +7,7 @@ import HomeLayout from '@/layouts/home-layout';
 import { Link, router, useForm, usePage } from '@inertiajs/react';
 import React, { useEffect } from 'react';
 import Swal from 'sweetalert2';
+import { v4 as uuidv4 } from 'uuid';
 
 interface MainCategory {
     id: number;
@@ -20,7 +21,7 @@ interface SubCategory {
 }
 
 interface NewsItem {
-    id: number;
+    id: string;
     author: {
         id: number;
         name: string;
@@ -80,6 +81,15 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                 href: `/category/${cat.id}/${sub.id}`,
             })),
     }));
+
+    const getClientId = () => {
+        let clientId = localStorage.getItem('client_id');
+        if (!clientId) {
+            clientId = uuidv4();
+            localStorage.setItem('client_id', clientId);
+        }
+        return clientId;
+    };
 
     // Format tanggal (misal: 28 Mei 2025)
     const formatDate = (isoString: string) => {
@@ -146,6 +156,31 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
         });
     };
 
+    const handleLike = (id: string) => {
+        const clientId = getClientId();
+
+        router.post(
+            `/like_berita/${id}`,
+            { client_id: clientId },
+            {
+                onSuccess: () => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Terima kasih!',
+                        text: 'Berita berhasil di-like.',
+                    });
+                },
+                onError: (errors) => {
+                    Swal.fire({
+                    icon: 'info',
+                    title: 'Berhasil di-unlike',
+                    text: 'Like kamu pada berita ini telah dihapus.',
+                    });
+                },
+            },
+        );
+    };
+
     return (
         <>
             <HomeLayout navItems={navItems}>
@@ -190,6 +225,14 @@ const Show: React.FC<Props> = ({ mainCategories, subCategories, mainArticle, rec
                                 <span>{mainArticle.views_count} views</span>
                                 <span>·</span>
                                 <span>{mainArticle.likes_count} likes</span>
+                                <button
+                                    className="ml-2 rounded bg-slate-200 px-3 py-1 text-slate-800 transition hover:bg-slate-300"
+                                    onClick={() => handleLike(mainArticle.id)}
+                                    type="button"
+                                    aria-label="Like"
+                                >
+                                    👍 Like
+                                </button>
                             </div>
 
                             {/* Contoh Seksi Konten Tambahan (jika diperlukan) */}

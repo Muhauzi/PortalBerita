@@ -16,8 +16,7 @@ class M_news_views extends Model
 
     protected $fillable = [
         'news_id',
-        'id_users',
-        'device_id',
+        'client_id',
         'created_at',
     ];
 
