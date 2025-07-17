@@ -147,7 +147,7 @@ class HomeController extends Controller
     
         // 8. Tambahkan cookie jika belum ada
         if (!$request->cookie('client_id')) {
-            $response->withCookie(
+            $response->headers->setCookie(
                 cookie('client_id', $clientId, 60 * 24 * 365) // 1 tahun
             );
         }
